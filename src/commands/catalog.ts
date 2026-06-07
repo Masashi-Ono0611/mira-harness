@@ -4,12 +4,12 @@
 import { CATEGORIES, probesFor } from "../catalog.js";
 import { c, note } from "../ui.js";
 
-export function listCatalog(category?: string): void {
+export function listCatalog(category?: string, max?: number): void {
   if (category && !CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
     note(c.red(`unknown category "${category}" (one of: ${CATEGORIES.join(", ")})`));
     process.exit(1);
   }
-  const probes = probesFor(category);
+  const probes = max !== undefined ? probesFor(category).slice(0, max) : probesFor(category);
   note(c.bold(`${probes.length} probe(s)${category ? ` [${category}]` : ""}`));
   for (const p of probes) {
     const tags = [p.slow ? c.yellow("slow") : "", p.confirm ? c.magenta("confirm") : ""]

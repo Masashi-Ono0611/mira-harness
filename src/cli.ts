@@ -16,7 +16,27 @@ import { report } from "./commands/report.js";
 import { doctor } from "./commands/doctor.js";
 import { listCatalog } from "./commands/catalog.js";
 
-const num = (v: string | undefined): number | undefined => (v === undefined ? undefined : Number(v));
+/** Parse a non-negative millisecond option; reject NaN/Infinity/negative (would
+ *  collapse setTimeout delays and silently remove the safety gap). */
+function ms(name: string, v: string | undefined): number | undefined {
+  if (v === undefined) return undefined;
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 0) {
+    console.error(`--${name} must be a non-negative number of milliseconds (got "${v}")`);
+    process.exit(1);
+  }
+  return n;
+}
+
+/** Parse a positive integer option (e.g. --max). */
+function posInt(name: string, v: string): number {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 1) {
+    console.error(`--${name} must be a positive integer (got "${v}")`);
+    process.exit(1);
+  }
+  return n;
+}
 
 const program = new Command();
 
@@ -43,7 +63,11 @@ program
   .option("--settle <ms>", "quiet window before concluding a reply")
   .option("--timeout <ms>", "give up if no reply by this many ms")
   .action(async (parts: string[], opts: { quiet: boolean; settle?: string; timeout?: string }) => {
-    await send(parts.join(" "), { quiet: opts.quiet, settle: num(opts.settle), timeout: num(opts.timeout) });
+    await send(parts.join(" "), {
+      quiet: opts.quiet,
+      settle: ms("settle", opts.settle),
+      timeout: ms("timeout", opts.timeout),
+    });
   });
 
 program
@@ -72,12 +96,12 @@ program
     }) => {
       await loop({
         category: opts.category,
-        max: Number(opts.max),
+        max: posInt("max", opts.max),
         confirm: opts.confirm,
         peer: opts.peer,
-        gap: num(opts.gap),
-        settle: num(opts.settle),
-        timeout: num(opts.timeout),
+        gap: ms("gap", opts.gap),
+        settle: ms("settle", opts.settle),
+        timeout: ms("timeout", opts.timeout),
         list: opts.list,
         quiet: opts.quiet,
       });

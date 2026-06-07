@@ -55,10 +55,11 @@ function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>): s
   const links = r.messages.reduce((n, m) => n + m.links.length, 0);
   const media = r.messages.filter((m) => m.media).map((m) => m.media?.kind).join(",");
   const head = r.timedOut ? c.yellow("TIMEOUT") : c.green(`${r.messages.length}msg`);
+  const latency = r.firstReplyMs === null ? c.dim("—") : c.dim(`${(r.firstReplyMs / 1000).toFixed(1)}s`);
   const parts = [
     c.cyan(id),
     head,
-    c.dim(`${((r.firstReplyMs ?? 0) / 1000).toFixed(1)}s`),
+    latency,
     btns ? `${btns}btn` : "",
     links ? `${links}link` : "",
     media ? c.magenta(`media=${media}`) : "",
@@ -92,7 +93,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
   }
 
   if (opts.list) {
-    listCatalog(opts.category);
+    listCatalog(opts.category, opts.max); // honor --max in the dry-run preview
     return;
   }
 
@@ -154,7 +155,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
           note(c.dim(`  ↳ pressing "${found.label}" on msg ${found.msgId} …`));
           const after = await withProgress(
             `${p.id} confirm`,
-            () => clickAndCollect(client, peer, found.msgId, found.data, SLOW),
+            () => clickAndCollect(client, peer, found.msgId, found.data, collectFor(p, opts)),
             opts.quiet,
           );
           await appendRun(after, {
