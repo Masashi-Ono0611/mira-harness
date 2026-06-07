@@ -82,20 +82,28 @@ function buildReport(records: RunRecord[]): string {
   );
   out.push("");
 
-  const known = new Set<string>(CATEGORIES);
-  for (const cat of CATEGORIES) {
-    const rows = records.filter((r) => r.category === cat);
-    if (!rows.length) continue;
-    out.push(`## ${cat}`, "", table(rows), "");
+  // Section per category present: built-in categories first (in their canonical
+  // order), then any custom-catalog categories in first-seen order, then a final
+  // bucket only for records that carry no category at all.
+  const builtin = (CATEGORIES as readonly string[]).filter((c) => records.some((r) => r.category === c));
+  const custom: string[] = [];
+  for (const r of records) {
+    if (r.category && !(CATEGORIES as readonly string[]).includes(r.category) && !custom.includes(r.category)) {
+      custom.push(r.category);
+    }
   }
-  const rest = records.filter((r) => !r.category || !known.has(r.category));
-  if (rest.length) out.push("## (uncategorized)", "", table(rest), "");
+  for (const cat of [...builtin, ...custom]) {
+    out.push(`## ${cat}`, "", table(records.filter((r) => r.category === cat)), "");
+  }
+  const uncategorized = records.filter((r) => !r.category);
+  if (uncategorized.length) out.push("## (uncategorized)", "", table(uncategorized), "");
   return out.join("\n");
 }
 
 export interface ReportOptions {
   in?: string;
   out?: string;
+  category?: string;
 }
 
 /**
@@ -103,10 +111,10 @@ export interface ReportOptions {
  * missing/empty log (callers decide how to surface it). Shared by the CLI command
  * and the MCP `mira_report` tool — neither writes to stdout from here.
  */
-export function renderReport(inFile?: string): string {
+export function renderReport(inFile?: string, category?: string): string {
   const path = inFile ? resolve(process.cwd(), inFile) : RUNS_FILE;
   const raw = readFileSync(path, "utf8"); // throws ENOENT when absent
-  const records: RunRecord[] = [];
+  let records: RunRecord[] = [];
   for (const line of raw.split("\n")) {
     const t = line.trim();
     if (!t) continue;
@@ -116,14 +124,17 @@ export function renderReport(inFile?: string): string {
       // skip malformed lines silently
     }
   }
-  if (!records.length) throw new Error("run log is empty.");
+  if (category) records = records.filter((r) => r.category === category);
+  if (!records.length) {
+    throw new Error(category ? `no probes in category "${category}" in the run log.` : "run log is empty.");
+  }
   return buildReport(records);
 }
 
 export function report(opts: ReportOptions): void {
   let md: string;
   try {
-    md = renderReport(opts.in);
+    md = renderReport(opts.in, opts.category);
   } catch (e) {
     if ((e as NodeJS.ErrnoException)?.code === "ENOENT") {
       const path = opts.in ? resolve(process.cwd(), opts.in) : RUNS_FILE;

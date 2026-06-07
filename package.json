@@ -27,7 +27,7 @@
     "dev": "tsx src/cli.ts",
     "login": "tsx src/cli.ts login",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/capture.test.ts",
+    "test": "tsx tests/capture.test.ts && tsx tests/catalog.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

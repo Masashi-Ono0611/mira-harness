@@ -26,6 +26,8 @@ export interface SendOptions {
   quiet?: boolean;
   settle?: number;
   timeout?: number;
+  /** Skip appending the result to the run log. */
+  noLog?: boolean;
 }
 
 export async function send(rawMessage: string, opts: SendOptions = {}): Promise<void> {
@@ -57,7 +59,7 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
       () => sendAndCollect(client, peer, message, collect),
       opts.quiet,
     );
-    await appendRun(result);
+    if (!opts.noLog) await appendRun(result);
     if (!opts.quiet) {
       note(
         result.timedOut

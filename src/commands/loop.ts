@@ -19,7 +19,7 @@ import { existsSync } from "node:fs";
 import { tgEnv } from "../env.js";
 import { connect, sendAndCollect, clickAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
-import { CATEGORIES, probesFor, type Probe } from "../catalog.js";
+import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "../catalog.js";
 import { c, note, withProgress } from "../ui.js";
 import { listCatalog } from "./catalog.js";
 
@@ -77,6 +77,8 @@ export interface LoopOptions {
   timeout?: number;
   list?: boolean;
   quiet?: boolean;
+  /** Custom catalog file (JSON); falls back to the built-in CATALOG. */
+  catalog?: string;
 }
 
 function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
@@ -87,15 +89,18 @@ function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
 }
 
 export async function loop(opts: LoopOptions): Promise<void> {
-  if (opts.category && !CATEGORIES.includes(opts.category as (typeof CATEGORIES)[number])) {
+  // Validate against built-in categories only when using the built-in catalog.
+  if (!opts.catalog && opts.category && !CATEGORIES.includes(opts.category as (typeof CATEGORIES)[number])) {
     console.error(`unknown --category "${opts.category}" (one of: ${CATEGORIES.join(", ")})`);
     process.exit(1);
   }
 
   if (opts.list) {
-    listCatalog(opts.category, opts.max); // honor --max in the dry-run preview
+    listCatalog({ category: opts.category, max: opts.max, catalog: opts.catalog }); // honor --max + custom catalog
     return;
   }
+
+  const source = opts.catalog ? loadCatalog(opts.catalog) : CATALOG;
 
   // Target the @mira DM by default; `--peer experiment|group` uses TG_EXPERIMENT_CHAT.
   let peer = tgEnv.miraPeer;
@@ -115,7 +120,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
     process.exit(1);
   }
 
-  const probes = probesFor(opts.category).slice(0, opts.max);
+  const probes = probesFor(opts.category, source).slice(0, opts.max);
   if (!probes.length) {
     console.error("no probes selected.");
     process.exit(1);

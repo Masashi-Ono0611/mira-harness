@@ -1,0 +1,22 @@
+[
+  {
+    "id": "hello",
+    "category": "smoke",
+    "hypothesis": "Bot replies to a basic greeting",
+    "send": "hello"
+  },
+  {
+    "id": "help",
+    "category": "smoke",
+    "hypothesis": "Bot exposes a help surface (commands / buttons)",
+    "send": "/help"
+  },
+  {
+    "id": "swap-link",
+    "category": "skills",
+    "hypothesis": "A FROM_TO_AMOUNT pattern yields a swap link",
+    "send": "STON_USDT_10",
+    "slow": true,
+    "note": "id + send are required; category/hypothesis/slow/confirm/note are optional"
+  }
+]
