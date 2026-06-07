@@ -40,3 +40,4 @@ export {
 
 export { appendRun, RUNS_FILE, type RunMeta } from "./log.js";
 export { tgEnv } from "./env.js";
+export { renderReport } from "./commands/report.js";

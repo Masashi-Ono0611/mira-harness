@@ -98,15 +98,14 @@ export interface ReportOptions {
   out?: string;
 }
 
-export function report(opts: ReportOptions): void {
-  const path = opts.in ? resolve(process.cwd(), opts.in) : RUNS_FILE;
-  let raw: string;
-  try {
-    raw = readFileSync(path, "utf8");
-  } catch {
-    console.error(`no run log at ${path} — run \`mira-harness send\` or \`mira-harness loop\` first.`);
-    process.exit(1);
-  }
+/**
+ * Read the run log (JSONL) and return the Markdown report as a string. Throws on a
+ * missing/empty log (callers decide how to surface it). Shared by the CLI command
+ * and the MCP `mira_report` tool — neither writes to stdout from here.
+ */
+export function renderReport(inFile?: string): string {
+  const path = inFile ? resolve(process.cwd(), inFile) : RUNS_FILE;
+  const raw = readFileSync(path, "utf8"); // throws ENOENT when absent
   const records: RunRecord[] = [];
   for (const line of raw.split("\n")) {
     const t = line.trim();
@@ -114,19 +113,30 @@ export function report(opts: ReportOptions): void {
     try {
       records.push(JSON.parse(t) as RunRecord);
     } catch {
-      console.error(`skipping malformed line: ${truncate(t, 60)}`);
+      // skip malformed lines silently
     }
   }
-  if (!records.length) {
-    console.error("run log is empty.");
+  if (!records.length) throw new Error("run log is empty.");
+  return buildReport(records);
+}
+
+export function report(opts: ReportOptions): void {
+  let md: string;
+  try {
+    md = renderReport(opts.in);
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException)?.code === "ENOENT") {
+      const path = opts.in ? resolve(process.cwd(), opts.in) : RUNS_FILE;
+      console.error(`no run log at ${path} — run \`mira-harness send\` or \`mira-harness loop\` first.`);
+    } else {
+      console.error(e instanceof Error ? e.message : String(e));
+    }
     process.exit(1);
   }
-
-  const md = buildReport(records);
   if (opts.out) {
     const dest = resolve(process.cwd(), opts.out);
     writeFileSync(dest, `${md}\n`, "utf8");
-    console.error(`wrote ${records.length}-probe report to ${opts.out}`);
+    console.error(`wrote report to ${opts.out}`);
   } else {
     console.log(md);
   }

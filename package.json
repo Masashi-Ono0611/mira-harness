@@ -4,7 +4,8 @@
   "description": "Automated probe harness for the @mira Telegram bot — drive it from a userbot (GramJS), capture the full reply (buttons/links/media/edits), and run a self-driving experiment catalog.",
   "type": "module",
   "bin": {
-    "mira-harness": "dist/cli.js"
+    "mira-harness": "dist/cli.js",
+    "mira-harness-mcp": "dist/mcp.js"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -45,10 +46,12 @@
     "url": "git+https://github.com/Masashi-Ono0611/mira-harness.git"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^12",
     "dotenv": "^16",
     "picocolors": "^1.1.1",
-    "telegram": "^2.26.22"
+    "telegram": "^2.26.22",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22",

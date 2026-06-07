@@ -119,7 +119,43 @@ await client.disconnect();
 ```
 
 Exposed: `connect` · `sendAndCollect` · `clickAndCollect` · `extractMessage` · `CATALOG` /
-`probesFor` · `appendRun` · `tgEnv` (and their types).
+`probesFor` · `appendRun` · `renderReport` · `tgEnv` (and their types).
+
+## MCP server
+
+A third frontend over the same core: an MCP **stdio** server (`mira-harness-mcp`) so a
+Claude/agent can probe @mira directly via tools.
+
+| Tool | Args | What |
+|---|---|---|
+| `mira_send` | `message`, `settleMs?`, `timeoutMs?` | one probe → full reply (JSON) |
+| `mira_loop` | `category?`, `max?`, `peer?`, `gapMs?`, `settleMs?`, `timeoutMs?` | run the catalog, **observe-only** (never clicks / spends credits) |
+| `mira_catalog` | `category?` | list the catalog (no network) |
+| `mira_report` | `inFile?` | run log → Markdown |
+| `mira_doctor` | — | env / session / connectivity check |
+
+Register it (local build — run `npm run build` first):
+
+```json
+{
+  "mcpServers": {
+    "mira-harness": {
+      "command": "node",
+      "args": ["/abs/path/to/mira-harness/dist/mcp.js"],
+      "env": {
+        "TG_API_ID": "...",
+        "TG_API_HASH": "...",
+        "TG_SESSION": "...",
+        "MIRA_PEER": "mira"
+      }
+    }
+  }
+}
+```
+
+Credentials come from the `env` block above or a `.env` in the server's working
+directory. Once published (the bin ships in the `mira-harness` package):
+`{ "command": "npx", "args": ["-y", "--package", "mira-harness", "mira-harness-mcp"] }`.
 
 ## Safety
 
