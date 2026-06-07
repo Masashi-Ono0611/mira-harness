@@ -1,0 +1,49 @@
+{
+  "name": "mira-harness",
+  "version": "0.1.0",
+  "description": "Automated probe harness for the @mira Telegram bot — drive it from a userbot (GramJS), capture the full reply (buttons/links/media/edits), and run a self-driving experiment catalog.",
+  "type": "module",
+  "bin": {
+    "mira-harness": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/cli.ts",
+    "login": "tsx src/cli.ts login",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx tests/capture.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "telegram",
+    "mira",
+    "gramjs",
+    "userbot",
+    "bot-testing",
+    "e2e",
+    "cli"
+  ],
+  "author": "Masashi Ono",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Masashi-Ono0611/mira-harness.git"
+  },
+  "dependencies": {
+    "commander": "^12",
+    "dotenv": "^16",
+    "telegram": "^2.26.22"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsup": "^8",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}

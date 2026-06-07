@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Secrets — TG_SESSION grants full account access
+.env
+.env.local
+
+# Kill switch
+STOP_MIRA
+
+# Run log (append-only machine log)
+mira-runs.jsonl
+
+*.log
+.DS_Store
