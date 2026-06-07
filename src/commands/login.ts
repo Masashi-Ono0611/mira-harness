@@ -9,6 +9,8 @@
  */
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
+import { Logger } from "telegram/extensions/index.js";
+import { LogLevel } from "telegram/extensions/Logger.js";
 import { createInterface } from "node:readline/promises";
 import { tgEnv } from "../env.js";
 
@@ -18,6 +20,7 @@ export async function login(): Promise<void> {
 
   const client = new TelegramClient(new StringSession(""), tgEnv.apiId(), tgEnv.apiHash(), {
     connectionRetries: 5,
+    baseLogger: new Logger(LogLevel.NONE),
   });
 
   await client.start({

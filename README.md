@@ -60,12 +60,22 @@ npm run dev -- loop --peer experiment
 # distill the run log into Markdown
 npm run dev -- report
 npm run dev -- report --out report.md
+
+# preflight checks (env / session / connectivity) and list the catalog
+npm run dev -- doctor
+npm run dev -- catalog
+npm run dev -- loop --list
+
+# message via stdin; tune timing; quiet (no spinner)
+echo "STON_USDT_10" | npm run dev -- send
+npm run dev -- send "ping" --settle 3000 --timeout 30000 --quiet
 ```
 
-After `npm run build`:
+After `npm run build` (or once published):
 
 ```bash
-npx mira-harness send "ping"
+npx mira-harness doctor
+npx mira-harness send "STON_USDT_10"
 npx mira-harness loop --category core
 ```
 
@@ -87,9 +97,29 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 | Command | What |
 |---|---|
 | `login` | One-time interactive login → prints `TG_SESSION` |
-| `send <message...>` | One probe → full reply as JSON + append to run log |
-| `loop [--category] [--max] [--confirm] [--peer]` | Run the catalog (`src/catalog.ts`) paced |
-| `report [--in] [--out]` | Distill the run log into Markdown |
+| `doctor` | Check `.env` / session / connectivity / @mira resolution (read-only) |
+| `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout` |
+| `loop` | Run the catalog paced. `--category --max --confirm --peer --gap --settle --timeout --list --quiet` |
+| `catalog` | List the experiment catalog (no sends). `--category` |
+| `report` | Distill the run log into Markdown. `--in --out` |
+
+Run `mira-harness --help` (or `<command> --help`) for full options.
+
+## Use as a library
+
+The CLI is a thin frontend over an exported core:
+
+```ts
+import { connect, sendAndCollect } from "mira-harness";
+
+const client = await connect(process.env.TG_SESSION!);
+const result = await sendAndCollect(client, "mira", "STON_USDT_10");
+console.log(result.messages[0]?.buttons); // captured buttons (incl. web_app/startapp)
+await client.disconnect();
+```
+
+Exposed: `connect` · `sendAndCollect` · `clickAndCollect` · `extractMessage` · `CATALOG` /
+`probesFor` · `appendRun` · `tgEnv` (and their types).
 
 ## Safety
 
