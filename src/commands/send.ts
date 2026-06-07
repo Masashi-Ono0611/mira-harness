@@ -3,19 +3,35 @@
  * (all messages + edits + buttons/links/media), and append it to the run log.
  *
  *   mira-harness send "your message to @mira"
+ *   echo "STON_USDT_10" | mira-harness send       # message via stdin
  *
  * Kill switch: create a file named STOP_MIRA in the cwd to block sends.
  */
 import { existsSync } from "node:fs";
 import { tgEnv } from "../env.js";
-import { connect, sendAndCollect } from "../client.js";
+import { connect, sendAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
+import { c, note, withProgress } from "../ui.js";
 
 const STOP_FILE = "STOP_MIRA";
 
-export async function send(message: string): Promise<void> {
-  if (!message.trim()) {
-    console.error('usage: mira-harness send "<message to @mira>"');
+async function readStdin(): Promise<string> {
+  if (process.stdin.isTTY) return "";
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
+  return Buffer.concat(chunks).toString("utf8").trim();
+}
+
+export interface SendOptions {
+  quiet?: boolean;
+  settle?: number;
+  timeout?: number;
+}
+
+export async function send(rawMessage: string, opts: SendOptions = {}): Promise<void> {
+  const message = rawMessage.trim() || (await readStdin());
+  if (!message) {
+    console.error('usage: mira-harness send "<message>"  (or pipe the message via stdin)');
     process.exit(1);
   }
   if (existsSync(STOP_FILE)) {
@@ -29,11 +45,26 @@ export async function send(message: string): Promise<void> {
     process.exit(1);
   }
 
+  const collect: CollectOptions = {};
+  if (opts.settle !== undefined) collect.settleMs = opts.settle;
+  if (opts.timeout !== undefined) collect.firstReplyTimeoutMs = opts.timeout;
+
   const peer = tgEnv.miraPeer;
   const client = await connect(session);
   try {
-    const result = await sendAndCollect(client, peer, message);
+    const result = await withProgress(
+      `waiting for @${peer}`,
+      () => sendAndCollect(client, peer, message, collect),
+      opts.quiet,
+    );
     await appendRun(result);
+    if (!opts.quiet) {
+      note(
+        result.timedOut
+          ? c.yellow("no reply (timed out)")
+          : c.green(`${result.messages.length} message(s) · first reply ${((result.firstReplyMs ?? 0) / 1000).toFixed(1)}s`),
+      );
+    }
     console.log(JSON.stringify(result, null, 2));
   } finally {
     await client.disconnect();

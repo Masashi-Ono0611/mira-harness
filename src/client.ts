@@ -11,6 +11,8 @@ import { TelegramClient, Api } from "telegram";
 // can't do bare directory imports like "telegram/sessions").
 import { StringSession } from "telegram/sessions/index.js";
 import { NewMessage, Raw } from "telegram/events/index.js";
+import { Logger } from "telegram/extensions/index.js";
+import { LogLevel } from "telegram/extensions/Logger.js";
 // EditedMessage exists in events/index.d.ts but isn't re-exported by events/index.js
 // (GramJS packaging quirk), so import it from its submodule directly.
 import { EditedMessage } from "telegram/events/EditedMessage.js";
@@ -36,6 +38,8 @@ export function assertAllowed(peer: string): void {
 export async function connect(session: string): Promise<TelegramClient> {
   const client = new TelegramClient(new StringSession(session), tgEnv.apiId(), tgEnv.apiHash(), {
     connectionRetries: 5,
+    // Silence GramJS's INFO chatter so the CLI's own output stays clean.
+    baseLogger: new Logger(LogLevel.NONE),
   });
   await client.connect();
   // Touch self once so the client is fully initialized before resolving peers.
@@ -53,7 +57,7 @@ type ResolvedEntity = GetEntityResult extends readonly (infer U)[] ? U : GetEnti
  * @mira that fails (its `username` comes back null), so fall back to finding it
  * among existing dialogs by username or display name.
  */
-async function resolvePeer(client: TelegramClient, peer: string): Promise<ResolvedEntity> {
+export async function resolvePeer(client: TelegramClient, peer: string): Promise<ResolvedEntity> {
   try {
     return await client.getEntity(peer);
   } catch {

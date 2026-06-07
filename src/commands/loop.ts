@@ -4,6 +4,7 @@
  *
  *   mira-harness loop                          # up to --max probes from the catalog
  *   mira-harness loop --category core
+ *   mira-harness loop --list                   # just list what would run
  *   mira-harness loop --category generation --confirm   # also press ✅ Confirm (spends credits)
  *   mira-harness loop --peer experiment        # run in TG_EXPERIMENT_CHAT instead of the DM
  *
@@ -19,9 +20,11 @@ import { tgEnv } from "../env.js";
 import { connect, sendAndCollect, clickAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
 import { CATEGORIES, probesFor, type Probe } from "../catalog.js";
+import { c, note, withProgress } from "../ui.js";
+import { listCatalog } from "./catalog.js";
 
 const STOP_FILE = "STOP_MIRA";
-const GAP_MS = 15_000;
+const DEFAULT_GAP_MS = 15_000;
 const SLOW: CollectOptions = { firstReplyTimeoutMs: 90_000, maxMs: 240_000, typingGraceMs: 90_000 };
 
 /** A button we'll press is a one-shot "Confirm"; never "Always yes" or anything risky. */
@@ -46,21 +49,21 @@ function findConfirmButton(result: Awaited<ReturnType<typeof sendAndCollect>>): 
   return undefined;
 }
 
-/** Compact one-line summary of a probe result for stdout. */
-function summarize(p: Probe, r: Awaited<ReturnType<typeof sendAndCollect>>): string {
+/** Colored one-line summary of a probe result. */
+function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>): string {
   const btns = r.messages.reduce((n, m) => n + m.buttons.length, 0);
   const links = r.messages.reduce((n, m) => n + m.links.length, 0);
   const media = r.messages.filter((m) => m.media).map((m) => m.media?.kind).join(",");
-  return [
-    p.id,
-    r.timedOut ? "TIMEOUT" : `${r.messages.length}msg`,
-    `${r.firstReplyMs ?? "-"}ms`,
+  const head = r.timedOut ? c.yellow("TIMEOUT") : c.green(`${r.messages.length}msg`);
+  const parts = [
+    c.cyan(id),
+    head,
+    c.dim(`${((r.firstReplyMs ?? 0) / 1000).toFixed(1)}s`),
     btns ? `${btns}btn` : "",
     links ? `${links}link` : "",
-    media ? `media=${media}` : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+    media ? c.magenta(`media=${media}`) : "",
+  ].filter(Boolean);
+  return parts.join(" ");
 }
 
 export interface LoopOptions {
@@ -68,12 +71,29 @@ export interface LoopOptions {
   max: number;
   confirm: boolean;
   peer?: string;
+  gap?: number;
+  settle?: number;
+  timeout?: number;
+  list?: boolean;
+  quiet?: boolean;
+}
+
+function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
+  const base: CollectOptions = p.slow ? { ...SLOW } : {};
+  if (opts.settle !== undefined) base.settleMs = opts.settle;
+  if (opts.timeout !== undefined) base.firstReplyTimeoutMs = opts.timeout;
+  return base;
 }
 
 export async function loop(opts: LoopOptions): Promise<void> {
   if (opts.category && !CATEGORIES.includes(opts.category as (typeof CATEGORIES)[number])) {
     console.error(`unknown --category "${opts.category}" (one of: ${CATEGORIES.join(", ")})`);
     process.exit(1);
+  }
+
+  if (opts.list) {
+    listCatalog(opts.category);
+    return;
   }
 
   // Target the @mira DM by default; `--peer experiment|group` uses TG_EXPERIMENT_CHAT.
@@ -99,9 +119,12 @@ export async function loop(opts: LoopOptions): Promise<void> {
     console.error("no probes selected.");
     process.exit(1);
   }
-  console.error(
-    `running ${probes.length} probe(s)${opts.category ? ` [${opts.category}]` : ""} -> ${peer}` +
-      `, gap ${GAP_MS / 1000}s${opts.confirm ? ", --confirm ON" : ""}`,
+  const gap = opts.gap ?? DEFAULT_GAP_MS;
+  note(
+    c.bold(
+      `running ${probes.length} probe(s)${opts.category ? ` [${opts.category}]` : ""} -> @${peer}` +
+        c.dim(`  gap ${gap / 1000}s${opts.confirm ? "  --confirm ON" : ""}`),
+    ),
   );
 
   const client = await connect(session);
@@ -109,37 +132,45 @@ export async function loop(opts: LoopOptions): Promise<void> {
   try {
     for (let i = 0; i < probes.length; i++) {
       if (existsSync(STOP_FILE)) {
-        console.error(`${STOP_FILE} present — stopping (ran ${ran}/${probes.length}).`);
+        note(c.yellow(`${STOP_FILE} present — stopping (ran ${ran}/${probes.length}).`));
         break;
       }
       const p = probes[i];
-      const result = await sendAndCollect(client, peer, p.send, p.slow ? SLOW : {});
+      const result = await withProgress(
+        `${p.id} -> @${peer}`,
+        () => sendAndCollect(client, peer, p.send, collectFor(p, opts)),
+        opts.quiet,
+      );
       await appendRun(result, { probeId: p.id, category: p.category, hypothesis: p.hypothesis });
       ran += 1;
-      console.log(summarize(p, result));
+      console.log(summarize(p.id, result));
 
       // Interaction (opt-in): press a safe Confirm to complete a credit-gated probe.
       if (opts.confirm && p.confirm) {
-        const c = findConfirmButton(result);
-        if (c && existsSync(STOP_FILE)) {
-          console.error(`  ↳ ${STOP_FILE} present — skipping the credit-gated confirm for ${p.id}.`);
-        } else if (c) {
-          console.error(`  ↳ pressing "${c.label}" on msg ${c.msgId} …`);
-          const after = await clickAndCollect(client, peer, c.msgId, c.data, SLOW);
+        const found = findConfirmButton(result);
+        if (found && existsSync(STOP_FILE)) {
+          note(c.yellow(`  ↳ ${STOP_FILE} present — skipping the credit-gated confirm for ${p.id}.`));
+        } else if (found) {
+          note(c.dim(`  ↳ pressing "${found.label}" on msg ${found.msgId} …`));
+          const after = await withProgress(
+            `${p.id} confirm`,
+            () => clickAndCollect(client, peer, found.msgId, found.data, SLOW),
+            opts.quiet,
+          );
           await appendRun(after, {
             probeId: `${p.id}-confirmed`,
             category: p.category,
-            hypothesis: `press "${c.label}" -> result`,
+            hypothesis: `press "${found.label}" -> result`,
           });
-          console.log(summarize({ ...p, id: `${p.id}-confirmed` }, after));
+          console.log(summarize(`${p.id}-confirmed`, after));
         } else {
-          console.error(`  ↳ --confirm set but no safe Confirm button found for ${p.id}`);
+          note(c.dim(`  ↳ --confirm set but no safe Confirm button found for ${p.id}`));
         }
       }
-      if (i < probes.length - 1) await sleep(GAP_MS);
+      if (i < probes.length - 1) await sleep(gap);
     }
   } finally {
     await client.disconnect();
   }
-  console.error(`done — ${ran} probe(s) logged.`);
+  note(c.green(`done — ${ran} probe(s) logged.`));
 }
