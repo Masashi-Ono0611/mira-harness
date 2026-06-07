@@ -82,14 +82,21 @@ function buildReport(records: RunRecord[]): string {
   );
   out.push("");
 
-  const known = new Set<string>(CATEGORIES);
-  for (const cat of CATEGORIES) {
-    const rows = records.filter((r) => r.category === cat);
-    if (!rows.length) continue;
-    out.push(`## ${cat}`, "", table(rows), "");
+  // Section per category present: built-in categories first (in their canonical
+  // order), then any custom-catalog categories in first-seen order, then a final
+  // bucket only for records that carry no category at all.
+  const builtin = (CATEGORIES as readonly string[]).filter((c) => records.some((r) => r.category === c));
+  const custom: string[] = [];
+  for (const r of records) {
+    if (r.category && !(CATEGORIES as readonly string[]).includes(r.category) && !custom.includes(r.category)) {
+      custom.push(r.category);
+    }
   }
-  const rest = records.filter((r) => !r.category || !known.has(r.category));
-  if (rest.length) out.push("## (uncategorized)", "", table(rest), "");
+  for (const cat of [...builtin, ...custom]) {
+    out.push(`## ${cat}`, "", table(records.filter((r) => r.category === cat)), "");
+  }
+  const uncategorized = records.filter((r) => !r.category);
+  if (uncategorized.length) out.push("## (uncategorized)", "", table(uncategorized), "");
   return out.join("\n");
 }
 
