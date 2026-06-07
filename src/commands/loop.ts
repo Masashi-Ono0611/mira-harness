@@ -35,8 +35,8 @@ type Confirmable = { msgId: number; data: Buffer; label: string };
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** Find a safe one-shot Confirm callback button in a result, or undefined. */
-function findConfirmButton(result: Awaited<ReturnType<typeof sendAndCollect>>): Confirmable | undefined {
+/** Find a safe one-shot Confirm callback button in a result, or undefined. (Exported for tests.) */
+export function findConfirmButton(result: Awaited<ReturnType<typeof sendAndCollect>>): Confirmable | undefined {
   for (const m of result.messages) {
     if (UNSAFE_RE.test(m.text)) continue; // skip wallet/OAuth/transfer contexts entirely
     for (const b of m.buttons) {
