@@ -65,7 +65,7 @@ function table(rows: RunRecord[]): string {
   return `${head}\n${body}`;
 }
 
-function buildReport(records: RunRecord[]): string {
+export function buildReport(records: RunRecord[]): string {
   const replied = records.filter((r) => !r.timedOut);
   const latencies = replied.map((r) => r.firstReplyMs ?? 0).filter((n) => n > 0);
   const avg = latencies.length ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
