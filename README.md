@@ -154,7 +154,8 @@ Register it (local build — run `npm run build` first):
 ```
 
 Credentials come from the `env` block above or a `.env` in the server's working
-directory. Once published: `{ "command": "npx", "args": ["-y", "mira-harness-mcp"] }`.
+directory. Once published (the bin ships in the `mira-harness` package):
+`{ "command": "npx", "args": ["-y", "--package", "mira-harness", "mira-harness-mcp"] }`.
 
 ## Safety
 

@@ -183,7 +183,9 @@ server.registerTool(
   {
     title: "Preflight checks",
     description: "Check env, session, connectivity and @mira resolution (read-only — sends nothing).",
-    inputSchema: {},
+    // No inputSchema: an EMPTY object shape ({}) makes the SDK reject no-argument
+    // calls with -32602 (it validates `undefined` against an object). Omitting it
+    // lets `mira_doctor` be called with no arguments.
   },
   async () => {
     const lines: string[] = [];
