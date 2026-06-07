@@ -66,9 +66,14 @@ npm run dev -- doctor
 npm run dev -- catalog
 npm run dev -- loop --list
 
-# message via stdin; tune timing; quiet (no spinner)
+# message via stdin; tune timing; quiet (no spinner); skip the run log
 echo "STON_USDT_10" | npm run dev -- send
-npm run dev -- send "ping" --settle 3000 --timeout 30000 --quiet
+npm run dev -- send "ping" --settle 3000 --timeout 30000 --quiet --no-log
+
+# live-tail @mira while you poke at it by hand; custom catalog; filtered report
+npm run dev -- watch
+npm run dev -- loop --catalog ./examples/catalog.sample.json
+npm run dev -- report --category core
 ```
 
 After `npm run build` (or once published):
@@ -98,12 +103,25 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 |---|---|
 | `login` | One-time interactive login → prints `TG_SESSION` |
 | `doctor` | Check `.env` / session / connectivity / @mira resolution (read-only) |
-| `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout` |
-| `loop` | Run the catalog paced. `--category --max --confirm --peer --gap --settle --timeout --list --quiet` |
-| `catalog` | List the experiment catalog (no sends). `--category` |
-| `report` | Distill the run log into Markdown. `--in --out` |
+| `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout --no-log` |
+| `loop` | Run the catalog paced. `--category --max --confirm --peer --gap --settle --timeout --list --catalog --quiet` |
+| `catalog` | List the catalog (no sends). `--category --catalog --json` |
+| `watch` | Live-tail @mira's messages (observe-only). `--peer` |
+| `report` | Distill the run log into Markdown. `--in --out --category` |
 
 Run `mira-harness --help` (or `<command> --help`) for full options.
+
+### Custom catalog
+
+The built-in catalog (30 probes: `core` / `skills` / `generation` / `wallet`) is just a
+default. Point `--catalog <file.json>` (CLI) or `catalogFile` (MCP) at your own probe set
+to probe any bot — each entry needs `id` + `send` (`category` / `hypothesis` / `slow` /
+`confirm` / `note` optional). See [`examples/catalog.sample.json`](examples/catalog.sample.json):
+
+```bash
+mira-harness loop --catalog ./examples/catalog.sample.json
+mira-harness catalog --catalog ./examples/catalog.sample.json --json
+```
 
 ## Use as a library
 
@@ -129,9 +147,9 @@ Claude/agent can probe @mira directly via tools.
 | Tool | Args | What |
 |---|---|---|
 | `mira_send` | `message`, `settleMs?`, `timeoutMs?` | one probe → full reply (JSON) |
-| `mira_loop` | `category?`, `max?`, `peer?`, `gapMs?`, `settleMs?`, `timeoutMs?` | run the catalog, **observe-only** (never clicks / spends credits) |
-| `mira_catalog` | `category?` | list the catalog (no network) |
-| `mira_report` | `inFile?` | run log → Markdown |
+| `mira_loop` | `category?`, `max?`, `peer?`, `gapMs?`, `settleMs?`, `timeoutMs?`, `catalogFile?` | run the catalog, **observe-only** (never clicks / spends credits) |
+| `mira_catalog` | `category?`, `catalogFile?` | list the catalog (no network) |
+| `mira_report` | `inFile?`, `category?` | run log → Markdown |
 | `mira_doctor` | — | env / session / connectivity check |
 
 Register it (local build — run `npm run build` first):

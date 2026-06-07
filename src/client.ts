@@ -18,7 +18,7 @@ import { LogLevel } from "telegram/extensions/Logger.js";
 import { EditedMessage } from "telegram/events/EditedMessage.js";
 import type { NewMessageEvent } from "telegram/events/index.js";
 import { tgEnv } from "./env.js";
-import { extractMessage, type ProbeResult } from "./capture.js";
+import { extractMessage, type CapturedMessage, type ProbeResult } from "./capture.js";
 
 export function allowedPeers(): string[] {
   const peers = [tgEnv.miraPeer];
@@ -243,4 +243,32 @@ export async function clickAndCollect(
   const result = buildCollector(peer, client, t, `[click callback on msg ${msgId}]`, opts);
   await client.invoke(new Api.messages.GetBotCallbackAnswer({ peer: t.entity, msgId, data }));
   return result;
+}
+
+/**
+ * Stream @mira's messages in `peer` (observe-only, no send). Calls `onMessage` for
+ * each new or edited message, scoped to this conversation + @mira as the sender.
+ * Returns an unsubscribe function. Used by `mira-harness watch`.
+ */
+export async function subscribe(
+  client: TelegramClient,
+  peer: string,
+  onMessage: (m: CapturedMessage, kind: "new" | "edit") => void,
+): Promise<() => void> {
+  assertAllowed(peer);
+  const t = await resolveTargets(client, peer);
+  const newEvent = new NewMessage({ chats: [t.entity.id], fromUsers: [t.miraUser] });
+  const editEvent = new EditedMessage({ chats: [t.entity.id], fromUsers: [t.miraUser] });
+  const onNew = async (ev: NewMessageEvent): Promise<void> => {
+    if (ev.message) onMessage(extractMessage(ev.message, 0), "new");
+  };
+  const onEdit = async (ev: NewMessageEvent): Promise<void> => {
+    if (ev.message) onMessage(extractMessage(ev.message, 1), "edit");
+  };
+  client.addEventHandler(onNew, newEvent);
+  client.addEventHandler(onEdit, editEvent);
+  return () => {
+    client.removeEventHandler(onNew, newEvent);
+    client.removeEventHandler(onEdit, editEvent);
+  };
 }

@@ -34,6 +34,7 @@ export {
   CATALOG,
   CATEGORIES,
   probesFor,
+  loadCatalog,
   type Probe,
   type ProbeCategory,
 } from "./catalog.js";

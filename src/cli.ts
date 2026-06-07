@@ -15,6 +15,7 @@ import { loop } from "./commands/loop.js";
 import { report } from "./commands/report.js";
 import { doctor } from "./commands/doctor.js";
 import { listCatalog } from "./commands/catalog.js";
+import { watch } from "./commands/watch.js";
 
 /** Parse a non-negative millisecond option; reject NaN/Infinity/negative (would
  *  collapse setTimeout delays and silently remove the safety gap). */
@@ -62,11 +63,13 @@ program
   .option("-q, --quiet", "suppress the progress spinner / status line", false)
   .option("--settle <ms>", "quiet window before concluding a reply")
   .option("--timeout <ms>", "give up if no reply by this many ms")
-  .action(async (parts: string[], opts: { quiet: boolean; settle?: string; timeout?: string }) => {
+  .option("--no-log", "do not append the result to the run log")
+  .action(async (parts: string[], opts: { quiet: boolean; settle?: string; timeout?: string; log: boolean }) => {
     await send(parts.join(" "), {
       quiet: opts.quiet,
       settle: ms("settle", opts.settle),
       timeout: ms("timeout", opts.timeout),
+      noLog: opts.log === false,
     });
   });
 
@@ -81,6 +84,7 @@ program
   .option("--settle <ms>", "quiet window before concluding a reply")
   .option("--timeout <ms>", "give up if no reply by this many ms")
   .option("--list", "list the probes that would run, then exit (no sends)", false)
+  .option("--catalog <file>", "custom catalog JSON file (instead of the built-in catalog)")
   .option("-q, --quiet", "suppress progress spinners", false)
   .action(
     async (opts: {
@@ -92,6 +96,7 @@ program
       settle?: string;
       timeout?: string;
       list: boolean;
+      catalog?: string;
       quiet: boolean;
     }) => {
       await loop({
@@ -103,6 +108,7 @@ program
         settle: ms("settle", opts.settle),
         timeout: ms("timeout", opts.timeout),
         list: opts.list,
+        catalog: opts.catalog,
         quiet: opts.quiet,
       });
     },
@@ -112,15 +118,28 @@ program
   .command("catalog")
   .description("List the experiment catalog (no sends)")
   .option("-c, --category <category>", `only this category (${CATEGORIES.join(" | ")})`)
-  .action((opts: { category?: string }) => listCatalog(opts.category));
+  .option("--catalog <file>", "custom catalog JSON file (instead of the built-in catalog)")
+  .option("--json", "output JSON instead of the colored list", false)
+  .action((opts: { category?: string; catalog?: string; json: boolean }) =>
+    listCatalog({ category: opts.category, catalog: opts.catalog, json: opts.json }),
+  );
+
+program
+  .command("watch")
+  .description("Live-tail @mira's messages (observe-only — sends nothing). Ctrl-C to stop")
+  .option("--peer <peer>", "'experiment'|'group' for TG_EXPERIMENT_CHAT, or a literal allowlisted peer")
+  .action(async (opts: { peer?: string }) => {
+    await watch({ peer: opts.peer });
+  });
 
 program
   .command("report")
   .description("Distill the run log (JSONL) into a Markdown report")
   .option("--in <file>", "input JSONL (default: the run log)")
   .option("--out <file>", "write to a file instead of stdout")
-  .action((opts: { in?: string; out?: string }) => {
-    report({ in: opts.in, out: opts.out });
+  .option("-c, --category <category>", "only include probes from this category")
+  .action((opts: { in?: string; out?: string; category?: string }) => {
+    report({ in: opts.in, out: opts.out, category: opts.category });
   });
 
 program.addHelpText(
@@ -134,7 +153,10 @@ Examples:
   $ mira-harness loop --category core
   $ mira-harness loop --list
   $ mira-harness loop --category generation --confirm
-  $ mira-harness report --out report.md
+  $ mira-harness loop --catalog ./examples/catalog.sample.json
+  $ mira-harness catalog --json
+  $ mira-harness watch
+  $ mira-harness report --category core --out report.md
 `,
 );
 

@@ -17,7 +17,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { connect, sendAndCollect, resolvePeer, type CollectOptions } from "./client.js";
 import { appendRun } from "./log.js";
-import { CATEGORIES, probesFor, type Probe } from "./catalog.js";
+import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "./catalog.js";
 import { renderReport } from "./commands/report.js";
 import { tgEnv } from "./env.js";
 import { getVersion } from "./version.js";
@@ -56,6 +56,10 @@ function validCategory(category: string | undefined): boolean {
   return !category || (CATEGORIES as readonly string[]).includes(category);
 }
 
+// NOTE: object-schema tools require the client to send an `arguments` object
+// (even `{}`). Spec-compliant clients including Claude always do; the SDK rejects
+// a fully-omitted `arguments` for an object schema. `mira_doctor` has no schema so
+// it accepts no-arg calls directly.
 const server = new McpServer({ name: "mira-harness", version: getVersion() });
 
 server.registerTool(
@@ -92,16 +96,25 @@ server.registerTool(
     description:
       "Send catalog probes to @mira at a human pace and capture replies. OBSERVE-ONLY: never presses buttons or spends credits (use the CLI `loop --confirm` for that).",
     inputSchema: {
-      category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")}`),
+      category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
       max: z.number().int().positive().max(50).optional().describe("max probes (default 6)"),
       peer: z.string().optional().describe("'experiment'|'group' for TG_EXPERIMENT_CHAT, or a literal allowlisted peer"),
       gapMs: z.number().int().nonnegative().optional().describe("delay between sends (default 15000)"),
       settleMs: z.number().int().positive().optional(),
       timeoutMs: z.number().int().positive().optional(),
+      catalogFile: z.string().optional().describe("custom catalog JSON file (instead of the built-in catalog)"),
     },
   },
-  async ({ category, max, peer, gapMs, settleMs, timeoutMs }) => {
-    if (!validCategory(category)) return errorText(`unknown category "${category}" (one of: ${CATEGORIES.join(", ")})`);
+  async ({ category, max, peer, gapMs, settleMs, timeoutMs, catalogFile }) => {
+    let source: Probe[];
+    try {
+      source = catalogFile ? loadCatalog(catalogFile) : CATALOG;
+    } catch (e) {
+      return errorText(msg(e));
+    }
+    if (!catalogFile && !validCategory(category)) {
+      return errorText(`unknown category "${category}" (one of: ${CATEGORIES.join(", ")})`);
+    }
     let target = tgEnv.miraPeer;
     if (peer === "experiment" || peer === "group") {
       if (!tgEnv.experimentChat) return errorText("peer 'experiment' requires TG_EXPERIMENT_CHAT in env.");
@@ -109,7 +122,7 @@ server.registerTool(
     } else if (peer) {
       target = peer;
     }
-    const probes = probesFor(category).slice(0, max ?? 6);
+    const probes = probesFor(category, source).slice(0, max ?? 6);
     if (!probes.length) return errorText("no probes selected.");
     const gap = gapMs ?? DEFAULT_GAP_MS;
     const results: unknown[] = [];
@@ -146,11 +159,22 @@ server.registerTool(
   {
     title: "List the experiment catalog",
     description: "List probes (id, category, hypothesis, flags) without sending anything.",
-    inputSchema: { category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")}`) },
+    inputSchema: {
+      category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
+      catalogFile: z.string().optional().describe("custom catalog JSON file (instead of the built-in catalog)"),
+    },
   },
-  async ({ category }) => {
-    if (!validCategory(category)) return errorText(`unknown category "${category}" (one of: ${CATEGORIES.join(", ")})`);
-    const probes = probesFor(category).map((p) => ({
+  async ({ category, catalogFile }) => {
+    let source: Probe[];
+    try {
+      source = catalogFile ? loadCatalog(catalogFile) : CATALOG;
+    } catch (e) {
+      return errorText(msg(e));
+    }
+    if (!catalogFile && !validCategory(category)) {
+      return errorText(`unknown category "${category}" (one of: ${CATEGORIES.join(", ")})`);
+    }
+    const probes = probesFor(category, source).map((p) => ({
       id: p.id,
       category: p.category,
       hypothesis: p.hypothesis,
@@ -167,11 +191,14 @@ server.registerTool(
   {
     title: "Render the run log as Markdown",
     description: "Distill the JSONL run log into a Markdown report (per-probe gist / signals / latency).",
-    inputSchema: { inFile: z.string().optional().describe("input JSONL path (default: the run log)") },
+    inputSchema: {
+      inFile: z.string().optional().describe("input JSONL path (default: the run log)"),
+      category: z.string().optional().describe("only include probes from this category"),
+    },
   },
-  async ({ inFile }) => {
+  async ({ inFile, category }) => {
     try {
-      return text(renderReport(inFile));
+      return text(renderReport(inFile, category));
     } catch (e) {
       return errorText(msg(e));
     }
