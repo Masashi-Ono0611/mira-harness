@@ -17,7 +17,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "examples"
   ],
   "engines": {
     "node": ">=18"
@@ -44,6 +45,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Masashi-Ono0611/mira-harness.git"
+  },
+  "homepage": "https://github.com/Masashi-Ono0611/mira-harness#readme",
+  "bugs": {
+    "url": "https://github.com/Masashi-Ono0611/mira-harness/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
