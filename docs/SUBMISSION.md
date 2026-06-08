@@ -43,12 +43,13 @@ It also runs a self-driving catalog of 30 probes (model/memory, skills, generati
 ## Links
 
 ```
+Site:        https://masashi-ono0611.github.io/mira-harness/
 GitHub:      https://github.com/Masashi-Ono0611/mira-harness
 npm:         https://www.npmjs.com/package/mira-harness
 Try it:      npx mira-harness doctor
+llms.txt:    https://masashi-ono0611.github.io/mira-harness/llms.txt
 Feedback:    https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/mira-feedback.md
 Experiments: https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/experiments-log.md
-llms.txt:    https://github.com/Masashi-Ono0611/mira-harness/blob/main/llms.txt
 ```
 
 ## How Did You Use Mira?

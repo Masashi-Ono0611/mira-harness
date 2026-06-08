@@ -7,6 +7,8 @@ Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
 > Built to let an AI agent (Claude) experiment on another AI (@mira) hands-free, and
 > to keep a structured, reproducible record of how @mira actually behaves.
 
+**Live:** [masashi-ono0611.github.io/mira-harness](https://masashi-ono0611.github.io/mira-harness/) — landing page + the hosted [`llms.txt`](https://masashi-ono0611.github.io/mira-harness/llms.txt) spec.
+
 ## Why a userbot (not a bot)
 
 @mira is **chat-native** — it lives in Telegram chat, with no public API. And
@@ -194,6 +196,7 @@ directory. The bin ships in the published `mira-harness` package, so:
 
 ## Docs
 
+- [Live site](https://masashi-ono0611.github.io/mira-harness/) — the project landing page, with the hosted [`llms.txt`](https://masashi-ono0611.github.io/mira-harness/llms.txt) spec.
 - [`docs/`](docs/) — hackathon submission, Mira AI Track feedback, and the full experiment log.
 - [`docs/mira-chat-history.txt`](docs/mira-chat-history.txt) — raw @mira chat transcript (101 messages), exported via the userbot (read-only).
 - [`llms.txt`](llms.txt) — LLM-facing spec so an agent can drive this tool without reverse-engineering it.
