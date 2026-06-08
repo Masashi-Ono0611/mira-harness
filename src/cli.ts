@@ -9,6 +9,7 @@
 import { Command } from "commander";
 import { CATEGORIES } from "./catalog.js";
 import { getVersion } from "./version.js";
+import { banner } from "./ui.js";
 import { login } from "./commands/login.js";
 import { send } from "./commands/send.js";
 import { loop } from "./commands/loop.js";
@@ -40,11 +41,17 @@ function posInt(name: string, v: string): number {
 }
 
 const program = new Command();
+const version = getVersion();
 
 program
   .name("mira-harness")
   .description("Automated probe harness for the @mira Telegram bot (GramJS userbot).")
-  .version(getVersion(), "-V, --version");
+  .version(version, "-V, --version");
+
+// Mascot banner before every command (stderr/TTY only; suppressed by --quiet).
+program.hook("preAction", (_thisCommand, actionCommand) => {
+  banner(version, { quiet: Boolean((actionCommand.opts() as { quiet?: boolean }).quiet) });
+});
 
 program
   .command("login")
@@ -159,6 +166,10 @@ Examples:
   $ mira-harness report --category core --out report.md
 `,
 );
+
+// Bare `mira-harness` (no command) -> launch screen: the preAction hook shows the
+// banner, then this prints the help. (-V / --help stay clean: handled before any action.)
+program.action(() => program.outputHelp());
 
 program
   .parseAsync(process.argv)
