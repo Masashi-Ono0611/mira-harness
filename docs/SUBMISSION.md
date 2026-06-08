@@ -35,9 +35,9 @@ Drive the @mira Telegram bot from a userbot, capture its full reply (buttons, li
 ## Description
 
 ```
-mira-harness is a developer tool for communicating with @mira, the Telegram AI teammate. @mira is chat-native (no public API) and Telegram won't let one bot read another, so the only programmatic path is a userbot (a real account over MTProto). mira-harness wraps that into a CLI, a TypeScript library, and an MCP server, so a human or an AI agent (Claude) can prompt @mira and capture its full reply — not just text, but buttons (incl. web_app / startapp), links, media, and streamed edits.
+mira-harness is a developer tool for communicating with @mira, the Telegram AI teammate. @mira is chat-native (no public API) and a bot can't read another bot, so the only programmatic path is a userbot (a real account over MTProto). mira-harness wraps that into a CLI, a TypeScript library, and an MCP server, so a human or an AI agent (Claude) can prompt @mira and capture its full reply: text, buttons (incl. web_app / startapp), links, media, and streamed edits.
 
-It also runs a self-driving experiment catalog: 30 probes across model/memory, skills, generation, and wallet, human-paced and observe-only by default (an allowlist + a STOP_MIRA kill switch block wallet/OAuth clicks and credit spend), distilled into a Markdown report. The unique angle — one AI (Claude, via MCP) autonomously experiments on another (@mira), hands-free, producing a reproducible record of how @mira behaves: exactly the Mira AI Track feedback (see docs/mira-feedback.md).
+It also runs a self-driving catalog of 30 probes (model/memory, skills, generation, wallet), human-paced and observe-only by default (an allowlist + STOP_MIRA kill switch block wallet/OAuth clicks and credit spend), distilled into a Markdown report. The angle: one AI (Claude, via MCP) experiments on another (@mira) hands-free, producing a reproducible record of how @mira behaves — exactly the Mira AI Track feedback (docs/mira-feedback.md).
 ```
 
 ## Links
