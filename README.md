@@ -1,10 +1,9 @@
-# mira-harness
+# mira-harness — a CLI + MCP dev-tool for experimenting on [@mira](https://t.me/mira)
 
-**Automated probe harness for the [@mira](https://t.me/mira) Telegram bot.**
-
-Drive @mira from a Telegram *userbot* (GramJS), capture the **full** reply — buttons,
-deep-link / `startapp` targets, source links, media, edits, latency — and run a
-self-driving experiment catalog. No screenshots, no copy-paste.
+A userbot harness that drives the **@mira Telegram bot**, captures its **full** reply —
+buttons, deep-link / `startapp` targets, source links, media, edits, latency — and runs a
+self-driving experiment catalog. Use it from your **terminal (CLI)**, your **code
+(library)**, or any **MCP agent**. No screenshots, no copy-paste.
 
 > Built to let an AI agent (Claude) experiment on another AI (@mira) hands-free, and
 > to keep a structured, reproducible record of how @mira actually behaves.
