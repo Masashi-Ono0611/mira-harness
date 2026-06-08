@@ -17,7 +17,7 @@ curated row per probe below.
 
 ## Campaign 2 — full-fidelity capture (2026-06-08, automated `loop`)
 
-20 probes across 4 categories. Key fact: **the harness reveals the non-text surface**
+~20 curated probes from the 30-probe catalog, across 4 categories. Key fact: **the harness reveals the non-text surface**
 (links, buttons, media, latency) a "first-text-only" client drops.
 
 ### core — model / memory / reasoning / I/O
@@ -53,17 +53,17 @@ curated row per probe below.
 
 | # | Sent | Mira reply | Verdict |
 |---|---|---|---|
-| 19 | "Generate an image …" | "Model: **GPT Image 2** · Cost **30 🪙** · Balance **2130 🪙** · Confirm?" + **[✅ Confirm][✅ Always yes][❌ Cancel]** callback buttons | ⏳ generation is **button-gated w/ cost preview**; needs a click |
-| 20 | "Create a 15s jingle …" | "Model: music · Duration 15s · Cost **60 🪙** · Balance 2130 🪙 · Confirm?" + same 3 buttons | ⏳ music = 60🪙, same gate |
+| 14 | "Generate an image …" | "Model: **GPT Image 2** · Cost **30 🪙** · Balance **2130 🪙** · Confirm?" + **[✅ Confirm][✅ Always yes][❌ Cancel]** callback buttons | ⏳ generation is **button-gated w/ cost preview**; needs a click |
+| 15 | "Create a 15s jingle …" | "Model: music · Duration 15s · Cost **60 🪙** · Balance 2130 🪙 · Confirm?" + same 3 buttons | ⏳ music = 60🪙, same gate |
 
 ### wallet & integrations — observed surface only (no clicks/OAuth)
 
 | # | Sent | Mira reply (summary) | Verdict |
 |---|---|---|---|
-| 15 | `/wallet` | "⚠️ Testnet … TON balance unavailable (service error) … recent tx history (jettons/TON)" | ✅ `/wallet` exists; testnet tx history; took **61s** (typing-grace fallback caught it) |
-| 16 | "What's my TON balance?" | "⚠️ Testnet … **1.8913 TON** …" | ✅ balance works via NL query |
-| 17 | "What integrations?" | "200+ services … Gmail, Slack, GitHub, Notion, Trello, Jira, X, … OAuth in a few clicks" | ✅ Composio breadth confirmed |
-| 18 | "Connect my GitHub" | "click the link to complete OAuth … expires in 10 min" + link `connect.composio.dev/link/lk_…` | ✅ **OAuth link surface captured; harness did NOT follow it** |
+| 16 | `/wallet` | "⚠️ Testnet … TON balance unavailable (service error) … recent tx history (jettons/TON)" | ✅ `/wallet` exists; testnet tx history; took **61s** (typing-grace fallback caught it) |
+| 17 | "What's my TON balance?" | "⚠️ Testnet … **1.8913 TON** …" | ✅ balance works via NL query |
+| 18 | "What integrations?" | "200+ services … Gmail, Slack, GitHub, Notion, Trello, Jira, X, … OAuth in a few clicks" | ✅ Composio breadth confirmed |
+| 19 | "Connect my GitHub" | "click the link to complete OAuth … expires in 10 min" + link `connect.composio.dev/link/lk_…` | ✅ **OAuth link surface captured; harness did NOT follow it** |
 
 ### Harness behavior observed (fidelity / fallback)
 
@@ -85,7 +85,7 @@ double-gated: catalog `confirm:true` + CLI opt-in; never wallet/OAuth), plus a
 
 | # | Sent | Mira reply (summary) | Verdict |
 |---|---|---|---|
-| 21 | `gen-image` then press **✅ Confirm** | 2 msgs: **photo** (caption "…flat vector style. 💎 / GPT Image 2 · 30 🪙") + "Done! Your TON TribeMind mascot is ready. 💎" | ✅ **interaction works** — pressing the callback completes the credit-gated generation; harness captures `media.kind=photo`. First reply 58s. |
+| 20 | `gen-image` then press **✅ Confirm** | 2 msgs: **photo** (caption "…flat vector style. 💎 / GPT Image 2 · 30 🪙") + "Done! Your TON TribeMind mascot is ready. 💎" | ✅ **interaction works** — pressing the callback completes the credit-gated generation; harness captures `media.kind=photo`. First reply 58s. |
 
 - **Generation flow confirmed**: send → Confirm card (cost preview) → press ✅ Confirm → image (~58s). Cost **30🪙**/image (balance 2130→2100).
 - `--peer experiment` routes probes to `TG_EXPERIMENT_CHAT` (group). Wired + typechecked; needs a configured group with @mira to run live (untested here).

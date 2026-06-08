@@ -195,6 +195,7 @@ directory. The bin ships in the published `mira-harness` package, so:
 ## Docs
 
 - [`docs/`](docs/) — hackathon submission, Mira AI Track feedback, and the full experiment log.
+- [`docs/mira-chat-history.txt`](docs/mira-chat-history.txt) — raw @mira chat transcript (101 messages), exported via the userbot (read-only).
 - [`llms.txt`](llms.txt) — LLM-facing spec so an agent can drive this tool without reverse-engineering it.
 
 ## Develop
