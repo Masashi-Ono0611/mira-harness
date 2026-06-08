@@ -1,0 +1,50 @@
+name: Deploy Pages
+
+# Publish a curated site: the landing page + the llms.txt spec (raw + a styled
+# viewer). Deliberately EXCLUDES docs/*.md and docs/mira-chat-history.txt — those
+# stay in the repo (rendered on github.com) but are not web-served here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/index.html"
+      - "docs/llms.html"
+      - "llms.txt"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble curated _site
+        run: |
+          mkdir -p _site
+          cp docs/index.html _site/index.html
+          cp docs/llms.html  _site/llms.html
+          cp llms.txt        _site/llms.txt   # single source: repo-root llms.txt
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
