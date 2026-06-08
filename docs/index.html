@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mira-harness — communicating with @mira</title>
+<style>
+  :root {
+    --ton: #0098EA;
+    --ton-deep: #0077C0;
+    --ton-tint: #E6F6FE;
+    --ink: #11151A;
+    --muted: #5B6B78;
+    --faint: #95A3AE;
+    --line: #E4EAEF;
+    --bg: #FFFFFF;
+    --surface: #F5F9FC;
+    --green: #1A7F4B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    background: linear-gradient(180deg, #E8F6FE 0%, #FFFFFF 240px);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 28px 100px; }
+  .mono { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace; }
+
+  /* ---------- hero ---------- */
+  header { padding: 72px 0 52px; border-bottom: 1px solid var(--line); }
+  .mark { width: 46px; height: 46px; display: block; margin-bottom: 22px; }
+  .kicker {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ton); font-weight: 700; margin-bottom: 18px;
+  }
+  h1 { font-size: 74px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; margin-bottom: 22px; }
+  .tagline { font-size: 27px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.32; max-width: 720px; }
+  .tagline strong { color: var(--ton); font-weight: 700; }
+  .sub { font-size: 16.5px; color: var(--muted); margin-top: 20px; max-width: 680px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #EAF6EF; color: var(--green); border: 1px solid #BFE3CE;
+    font-size: 12.5px; font-weight: 600; padding: 4px 11px; border-radius: 999px;
+    margin-top: 22px; font-family: ui-monospace, Menlo, monospace;
+  }
+  .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+  /* ---------- section scaffold ---------- */
+  section { padding: 62px 0; border-bottom: 1px solid var(--line); }
+  .label {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--faint); font-weight: 600; margin-bottom: 16px;
+  }
+  .label .n { color: var(--ton); }
+  h2 { font-size: 35px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.18; margin-bottom: 18px; }
+  .lead { font-size: 17.5px; color: var(--muted); max-width: 740px; }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- diagram frame ---------- */
+  .fig { margin: 38px 0 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 30px 26px; }
+  .fig svg { display: block; width: 100%; height: auto; }
+  .fig-cap { font-size: 13px; color: var(--faint); margin-top: 16px; text-align: center; font-family: ui-monospace, Menlo, monospace; }
+
+  /* ---------- pillars ---------- */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
+  .pillar { border: 1px solid var(--line); border-radius: 12px; padding: 22px 20px; background: var(--bg); }
+  .pillar .pt { font-size: 17px; font-weight: 700; margin-bottom: 7px; letter-spacing: -0.01em; }
+  .pillar .pt span { color: var(--ton); }
+  .pillar .pd { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- stat grid ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 36px; }
+  .stat { background: var(--bg); padding: 24px 22px; }
+  .stat .v { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 38px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: var(--ton); }
+  .stat .v .u { font-size: 14px; color: var(--faint); font-weight: 500; margin-left: 4px; }
+  .stat .k { font-size: 13px; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- capability list ---------- */
+  .caps { margin-top: 22px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .cap { display: flex; gap: 16px; align-items: baseline; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .cap .cv { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 15px; font-weight: 700; color: var(--ton); white-space: nowrap; min-width: 64px; }
+  .cap .cb { font-size: 15px; }
+  .cap .cb .s { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+
+  /* ---------- footer ---------- */
+  footer { padding: 46px 0 0; }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 10px 22px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .foot-links a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); padding-bottom: 1px; }
+  .foot-links a:hover { color: var(--ton); border-color: var(--ton); }
+  .foot-note { font-size: 12.5px; color: var(--faint); margin-top: 24px; font-family: ui-monospace, Menlo, monospace; }
+
+  /* svg shared text */
+  .svg-l { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; fill: var(--muted); }
+  .svg-t { font-family: -apple-system, sans-serif; font-size: 13px; fill: var(--ink); font-weight: 700; }
+  .svg-s { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: var(--faint); }
+  .svg-a { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; fill: var(--ton); font-weight: 700; }
+  .svg-g { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: var(--green); font-weight: 700; }
+  .svg-r { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: #C0392B; font-weight: 700; }
+
+  @media (max-width: 720px) {
+    h1 { font-size: 52px; }
+    .tagline { font-size: 22px; }
+    h2 { font-size: 27px; }
+    .pillars, .caps { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <header>
+    <svg class="mark" viewBox="0 0 56 56" role="img" aria-label="TON-style diamond">
+      <circle cx="28" cy="28" r="28" fill="#0098EA"/>
+      <path d="M15 20 H41 L28 43 Z M28 20 V43" stroke="#fff" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div class="kicker">STON.fi Vibe Coding · Mira AI Track</div>
+    <h1>mira-harness</h1>
+    <p class="tagline">@mira lives in chat, not code.<br><strong>mira-harness bridges the gap.</strong></p>
+    <div class="badge">live on npm · mira-harness@0.1.1</div>
+  </header>
+
+  <!-- ============ 01 CONCEPT ============ -->
+  <section>
+    <div class="label"><span class="n">01</span> &nbsp;Concept</div>
+    <h2>A CLI + MCP dev-tool for communicating with @mira</h2>
+    <p class="lead">Drive the <strong>@mira Telegram bot</strong> from a userbot, capture its <strong>full</strong> reply (buttons, links, media, edits), and run a self-driving experiment catalog — from the <strong>CLI</strong>, as a <strong>library</strong>, or via <strong>MCP</strong>.</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 760 220" role="img" aria-label="Concept: one AI drives another and records the result">
+        <rect x="24" y="56" width="168" height="74" rx="11" fill="#fff" stroke="#E4EAEF"/>
+        <text x="108" y="88" text-anchor="middle" class="svg-t">Claude</text>
+        <text x="108" y="108" text-anchor="middle" class="svg-s">AI agent</text>
+
+        <rect x="296" y="52" width="168" height="82" rx="11" fill="#E6F6FE" stroke="#0098EA" stroke-width="1.6"/>
+        <text x="380" y="84" text-anchor="middle" class="svg-t">mira-harness</text>
+        <text x="380" y="104" text-anchor="middle" class="svg-s">userbot · MTProto</text>
+
+        <rect x="568" y="56" width="168" height="74" rx="11" fill="#fff" stroke="#E4EAEF"/>
+        <text x="652" y="84" text-anchor="middle" class="svg-t">@mira</text>
+        <text x="652" y="104" text-anchor="middle" class="svg-s">AI teammate · Telegram</text>
+
+        <!-- forward -->
+        <path d="M192 82 L292 82" stroke="#5B6B78" stroke-width="1.5" marker-end="url(#c-ar)"/>
+        <text x="242" y="74" text-anchor="middle" class="svg-s">CLI / MCP</text>
+        <path d="M464 80 L566 80" stroke="#5B6B78" stroke-width="1.5" marker-end="url(#c-ar)"/>
+        <text x="515" y="72" text-anchor="middle" class="svg-s">prompt</text>
+
+        <!-- return -->
+        <path d="M566 110 L466 110" stroke="#0098EA" stroke-width="1.6" marker-end="url(#c-arb)"/>
+        <text x="516" y="126" text-anchor="middle" class="svg-a">full reply</text>
+
+        <!-- down to record -->
+        <path d="M380 134 L380 160" stroke="#0098EA" stroke-width="1.6" marker-end="url(#c-arb)"/>
+        <rect x="258" y="164" width="244" height="40" rx="9" fill="#fff" stroke="#0098EA"/>
+        <text x="380" y="188" text-anchor="middle" class="svg-s" style="fill:#11151A">saved log · JSONL → report</text>
+
+        <defs>
+          <marker id="c-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#5B6B78" stroke-width="1.4"/></marker>
+          <marker id="c-arb" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#0098EA" stroke-width="1.4"/></marker>
+        </defs>
+      </svg>
+      <div class="fig-cap">One AI runs another by itself, and saves exactly how @mira works.</div>
+    </div>
+  </section>
+
+  <!-- ============ 02 PROBLEM ============ -->
+  <section>
+    <div class="label"><span class="n">02</span> &nbsp;Problem</div>
+    <h2>@mira is chat-native</h2>
+    <p class="lead">@mira lives in Telegram chat, <strong>not behind a public API</strong>. And Telegram has a strict rule: <strong>a bot can't read another bot's messages</strong>. So a bot token won't work — the only way is a <strong>userbot</strong> (a real user account over MTProto).</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 760 210" role="img" aria-label="Problem: a bot token cannot reach @mira, a userbot can">
+        <line x1="380" y1="18" x2="380" y2="192" stroke="#E4EAEF" stroke-width="1" stroke-dasharray="3 4"/>
+
+        <!-- LEFT: bot token (fails) -->
+        <text x="30" y="30" class="svg-l">A BOT TOKEN</text>
+        <rect x="30" y="58" width="130" height="54" rx="9" fill="#fff" stroke="#E4EAEF"/>
+        <text x="95" y="80" text-anchor="middle" class="svg-t">Your bot</text>
+        <text x="95" y="98" text-anchor="middle" class="svg-s">bot token</text>
+        <rect x="218" y="58" width="120" height="54" rx="9" fill="#fff" stroke="#E4EAEF"/>
+        <text x="278" y="89" text-anchor="middle" class="svg-t">@mira</text>
+        <path d="M160 85 L216 85" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#p-x)"/>
+        <text x="188" y="78" text-anchor="middle" class="svg-r">✗</text>
+        <text x="30" y="140" class="svg-r">✗ a bot can't read another bot</text>
+        <text x="30" y="160" class="svg-r">✗ chat-only · no SDK / webhook</text>
+
+        <!-- RIGHT: userbot (works) -->
+        <text x="412" y="30" class="svg-a">A USERBOT</text>
+        <rect x="412" y="58" width="150" height="54" rx="9" fill="#E6F6FE" stroke="#0098EA" stroke-width="1.5"/>
+        <text x="487" y="80" text-anchor="middle" class="svg-t">Userbot</text>
+        <text x="487" y="98" text-anchor="middle" class="svg-s">real account</text>
+        <rect x="620" y="58" width="120" height="54" rx="9" fill="#fff" stroke="#E4EAEF"/>
+        <text x="680" y="89" text-anchor="middle" class="svg-t">@mira</text>
+        <path d="M562 85 L618 85" stroke="#1A7F4B" stroke-width="1.6" marker-end="url(#p-ok)"/>
+        <text x="590" y="78" text-anchor="middle" class="svg-g">✓</text>
+        <text x="412" y="140" class="svg-g">✓ talks to @mira like a human</text>
+        <text x="412" y="160" class="svg-g">✓ sees every button, link &amp; media</text>
+
+        <defs>
+          <marker id="p-x" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#C0392B" stroke-width="1.4"/></marker>
+          <marker id="p-ok" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#1A7F4B" stroke-width="1.4"/></marker>
+        </defs>
+      </svg>
+      <div class="fig-cap">Telegram blocks bot-to-bot reads and @mira is chat-only — so a GramJS userbot is the only way in.</div>
+    </div>
+  </section>
+
+  <!-- ============ 03 SOLUTION ============ -->
+  <section>
+    <div class="label"><span class="n">03</span> &nbsp;Solution</div>
+    <h2>Capture the whole reply, not just the text</h2>
+    <p class="lead">The useful parts of @mira's reply are <strong>not in the plain text</strong> — buttons, deep links, images, and live edits. mira-harness waits for the reply to <strong>settle</strong> (a quiet pause; for a slow bot it also watches the "typing…" sign — replies take 5–62s), then captures all of it.</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 760 230" role="img" aria-label="Solution: settle window then full-fidelity capture">
+        <rect x="20" y="44" width="120" height="50" rx="9" fill="#fff" stroke="#E4EAEF"/>
+        <text x="80" y="74" text-anchor="middle" class="svg-t">send prompt</text>
+
+        <rect x="180" y="38" width="150" height="62" rx="9" fill="#fff" stroke="#E4EAEF"/>
+        <text x="255" y="64" text-anchor="middle" class="svg-t">@mira replies</text>
+        <text x="255" y="82" text-anchor="middle" class="svg-s">multi-msg · 5–62s</text>
+
+        <path d="M140 69 L178 69" stroke="#5B6B78" stroke-width="1.5" marker-end="url(#s-ar)"/>
+        <path d="M330 69 L368 69" stroke="#0098EA" stroke-width="1.6" marker-end="url(#s-arb)"/>
+        <text x="349" y="34" text-anchor="middle" class="svg-s">settle</text>
+
+        <!-- capture panel -->
+        <rect x="372" y="26" width="368" height="186" rx="11" fill="#E6F6FE" stroke="#0098EA" stroke-width="1.6"/>
+        <text x="392" y="52" class="svg-t" style="fill:#11151A">captured per message</text>
+        <text x="392" y="80" class="svg-a">text</text><text x="450" y="80" class="svg-s">final message(s)</text>
+        <text x="392" y="106" class="svg-a">buttons</text><text x="450" y="106" class="svg-s">url · web_app · startapp · callback</text>
+        <text x="392" y="132" class="svg-a">links</text><text x="450" y="132" class="svg-s">text_url (deep-research sources)</text>
+        <text x="392" y="158" class="svg-a">media</text><text x="450" y="158" class="svg-s">photo · doc · webpage (metadata)</text>
+        <text x="392" y="184" class="svg-a">edits</text><text x="450" y="184" class="svg-s">streamed edits + editCount</text>
+
+        <text x="255" y="128" text-anchor="middle" class="svg-s" style="fill:#5B6B78">settle window +</text>
+        <text x="255" y="144" text-anchor="middle" class="svg-s" style="fill:#5B6B78">"typing…" wait</text>
+        <path d="M255 100 L255 116" stroke="#95A3AE" stroke-width="1.2" marker-end="url(#s-ar)"/>
+
+        <defs>
+          <marker id="s-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#5B6B78" stroke-width="1.4"/></marker>
+          <marker id="s-arb" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#0098EA" stroke-width="1.4"/></marker>
+        </defs>
+      </svg>
+      <div class="fig-cap">Wait for the reply to settle, then capture all of it — the part a text-only client misses.</div>
+    </div>
+  </section>
+
+  <!-- ============ 04 FEATURES ============ -->
+  <section>
+    <div class="label"><span class="n">04</span> &nbsp;Features</div>
+    <h2>One core, three frontends</h2>
+    <p class="lead">Three ways to drive @mira — the <strong>CLI</strong>, an <strong>MCP server</strong> for agents, and a <strong>library</strong> to import. A built-in list of 30 tests lets it run on its own, <strong>safe by default</strong>.</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 760 220" role="img" aria-label="Features: three frontends over one shared core">
+        <rect x="56"  y="24" width="170" height="46" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="141" y="52" text-anchor="middle" class="svg-t">CLI</text>
+        <rect x="296" y="24" width="170" height="46" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="381" y="52" text-anchor="middle" class="svg-t">MCP server</text>
+        <rect x="536" y="24" width="170" height="46" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="621" y="52" text-anchor="middle" class="svg-t">Library</text>
+
+        <path d="M141 70 L320 102" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#f-ar)"/>
+        <path d="M381 70 L381 100" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#f-ar)"/>
+        <path d="M621 70 L442 102" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#f-ar)"/>
+
+        <rect x="170" y="104" width="420" height="54" rx="10" fill="#E6F6FE" stroke="#0098EA" stroke-width="1.6"/>
+        <text x="380" y="128" text-anchor="middle" class="svg-t" style="fill:#11151A">one shared core</text>
+        <text x="380" y="146" text-anchor="middle" class="svg-s">connect · sendAndCollect · clickAndCollect · catalog</text>
+
+        <path d="M380 158 L380 182" stroke="#0098EA" stroke-width="1.6" marker-end="url(#f-arb)"/>
+        <rect x="312" y="184" width="136" height="32" rx="9" fill="#fff" stroke="#0098EA"/>
+        <text x="380" y="204" text-anchor="middle" class="svg-a">@mira</text>
+
+        <defs>
+          <marker id="f-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#5B6B78" stroke-width="1.4"/></marker>
+          <marker id="f-arb" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#0098EA" stroke-width="1.4"/></marker>
+        </defs>
+      </svg>
+      <div class="fig-cap">One core, three ways in — by hand, from an agent, or from code.</div>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pt"><span>CLI</span></div>
+        <div class="pd"><b>What:</b> commands in your terminal. <b>Use it</b> to try @mira by hand, fast. <span class="mono">npx mira-harness</span></div>
+      </div>
+      <div class="pillar">
+        <div class="pt"><span>MCP</span></div>
+        <div class="pd"><b>What:</b> a server with 5 tools. <b>Use it</b> to let Claude drive @mira — hands-free, read-only.</div>
+      </div>
+      <div class="pillar">
+        <div class="pt"><span>Library</span></div>
+        <div class="pd"><b>What:</b> a TypeScript import. <b>Use it</b> to build @mira into your own code. <span class="mono">sendAndCollect()</span></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="v">30</div><div class="k">built-in tests</div></div>
+      <div class="stat"><div class="v">4</div><div class="k">categories — core / skills / generation / wallet</div></div>
+      <div class="stat"><div class="v">3</div><div class="k">ways in — CLI / MCP / library</div></div>
+      <div class="stat"><div class="v">5</div><div class="k">MCP tools</div></div>
+    </div>
+
+    <div class="caps">
+      <div class="cap"><div class="cv">send</div><div class="cb">one test → full reply<span class="s">prints the full reply (buttons / links / media) as JSON</span></div></div>
+      <div class="cap"><div class="cv">loop</div><div class="cb">run the tests<span class="s">paced and read-only; <span class="mono">--confirm</span> taps a safe ✅ only on image / music tests</span></div></div>
+      <div class="cap"><div class="cv">report</div><div class="cb">JSONL → Markdown<span class="s">turns a run log into a table (summary / signals / time)</span></div></div>
+      <div class="cap"><div class="cv">watch</div><div class="cb">watch @mira live<span class="s">see replies in real time while you type by hand</span></div></div>
+      <div class="cap"><div class="cv">doctor</div><div class="cb">quick check<span class="s">env / session / connection / @mira (read-only)</span></div></div>
+      <div class="cap"><div class="cv">safe</div><div class="cb">safe by default<span class="s">allowlist + <span class="mono">STOP_MIRA</span> kill switch; never taps wallet / login</span></div></div>
+    </div>
+  </section>
+
+  <!-- ============ 05 USE CASES ============ -->
+  <section>
+    <div class="label"><span class="n">05</span> &nbsp;Use cases</div>
+    <h2>Where it fits</h2>
+    <p class="lead">Built around <strong>@mira</strong> — use it to <strong>QA</strong> the bot's behavior, learn how it works, and report what you find while you build with it.</p>
+
+    <div class="fig">
+      <svg viewBox="0 0 760 270" role="img" aria-label="Use cases: one tool, four jobs">
+        <!-- center -->
+        <rect x="290" y="108" width="180" height="58" rx="11" fill="#E6F6FE" stroke="#0098EA" stroke-width="1.6"/>
+        <text x="380" y="134" text-anchor="middle" class="svg-t">mira-harness</text>
+        <text x="380" y="152" text-anchor="middle" class="svg-s">drives @mira</text>
+
+        <!-- leaves -->
+        <rect x="30" y="28" width="180" height="54" rx="10" fill="#fff" stroke="#0098EA" stroke-width="1.5"/>
+        <text x="120" y="52" text-anchor="middle" class="svg-t">E2E QA</text>
+        <text x="120" y="70" text-anchor="middle" class="svg-a">in CI · product dev</text>
+
+        <rect x="30" y="188" width="180" height="54" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="120" y="212" text-anchor="middle" class="svg-t">Learn @mira</text>
+        <text x="120" y="230" text-anchor="middle" class="svg-s">no docs · chat-only</text>
+
+        <rect x="550" y="28" width="180" height="54" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="640" y="52" text-anchor="middle" class="svg-t">Agent QA</text>
+        <text x="640" y="70" text-anchor="middle" class="svg-s">Claude · via MCP</text>
+
+        <rect x="550" y="188" width="180" height="54" rx="10" fill="#fff" stroke="#E4EAEF"/>
+        <text x="640" y="212" text-anchor="middle" class="svg-t">Track feedback</text>
+        <text x="640" y="230" text-anchor="middle" class="svg-s">Mira AI Track</text>
+
+        <!-- spokes -->
+        <path d="M300 116 L214 56" stroke="#0098EA" stroke-width="1.5" marker-end="url(#u-ar)"/>
+        <path d="M300 158 L214 214" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#u-arm)"/>
+        <path d="M460 116 L546 56" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#u-arm)"/>
+        <path d="M460 158 L546 214" stroke="#5B6B78" stroke-width="1.3" marker-end="url(#u-arm)"/>
+
+        <defs>
+          <marker id="u-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#0098EA" stroke-width="1.3"/></marker>
+          <marker id="u-arm" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#5B6B78" stroke-width="1.3"/></marker>
+        </defs>
+      </svg>
+      <div class="fig-cap">Made for @mira — from E2E QA to Mira AI Track feedback.</div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="foot-links">
+      <a href="https://github.com/Masashi-Ono0611/mira-harness">GitHub</a>
+      <a href="https://www.npmjs.com/package/mira-harness">npm</a>
+      <a href="../README.md">README</a>
+      <a href="SUBMISSION.md">submission</a>
+      <a href="mira-feedback.md">Mira feedback</a>
+      <a href="experiments-log.md">experiment log</a>
+      <a href="../llms.txt">llms.txt</a>
+    </div>
+    <div class="foot-note">
+      mira-harness · STON.fi Vibe Coding Hackathon R2 — Mira AI Track · built with Claude (Opus) and @mira as pair programmers · MIT
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
