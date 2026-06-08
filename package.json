@@ -1,7 +1,7 @@
 {
   "name": "mira-harness",
   "version": "0.1.0",
-  "description": "Automated probe harness for the @mira Telegram bot — drive it from a userbot (GramJS), capture the full reply (buttons/links/media/edits), and run a self-driving experiment catalog.",
+  "description": "A CLI + MCP dev-tool for experimenting on the @mira Telegram bot — capture its full reply (buttons/links/media) and run a self-driving experiment catalog.",
   "type": "module",
   "bin": {
     "mira-harness": "dist/cli.js",
