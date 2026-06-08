@@ -10,4 +10,4 @@ Everything here is self-contained in this repo.
 | [experiments-log.md](experiments-log.md) | The raw findings backing the feedback — ~50 automated probes against @mira |
 | [mira-chat-history.txt](mira-chat-history.txt) | Raw @mira chat transcript (101 messages) — Mira AI Track checklist ①, exported via the userbot (read-only) |
 
-See also: [`../README.md`](../README.md) (tool usage) · [`../llms.txt`](../llms.txt) (LLM-facing spec).
+See also: [Live site](https://masashi-ono0611.github.io/mira-harness/) · [`../README.md`](../README.md) (tool usage) · [`../llms.txt`](../llms.txt) (LLM-facing spec).

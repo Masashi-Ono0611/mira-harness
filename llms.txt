@@ -57,5 +57,6 @@ any bot. Each entry needs `id` + `send`; optional `category` / `hypothesis` / `s
 - @mira's web research can hallucinate; surface its source link, never auto-execute on it.
 
 ## Links
+- Site: https://masashi-ono0611.github.io/mira-harness/
 - README: https://github.com/Masashi-Ono0611/mira-harness#readme
 - npm: https://www.npmjs.com/package/mira-harness
