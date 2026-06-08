@@ -1,4 +1,4 @@
-# mira-harness — a CLI + MCP dev-tool for experimenting on [@mira](https://t.me/mira)
+# mira-harness — a CLI + MCP dev-tool for communicating with [@mira](https://t.me/mira)
 
 Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
 (buttons, links, media, edits), and run a self-driving experiment catalog — from the
@@ -9,7 +9,8 @@ Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
 
 ## Why a userbot (not a bot)
 
-@mira has **no public API**, and Telegram has a hard rule: **a bot cannot read
+@mira is **chat-native** — it lives in Telegram chat, with no public API. And
+Telegram has a hard rule: **a bot cannot read
 another bot's messages**. So a bot token can't talk to @mira. The only working path
 is a **userbot** — driving a real Telegram *user account* via MTProto (GramJS).
 
@@ -27,7 +28,8 @@ npm install
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in your Telegram `api_id` / `api_hash` (it's gitignored):
+Copy `.env.example` to `.env` and fill in your Telegram `api_id` / `api_hash` — get them at
+[my.telegram.org](https://my.telegram.org) → **API development tools** (it's gitignored):
 
 ```bash
 cp .env.example .env

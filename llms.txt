@@ -1,12 +1,12 @@
 # mira-harness
 
-> A CLI + MCP dev-tool for experimenting on @mira (the Telegram AI teammate). Drive
+> A CLI + MCP dev-tool for communicating with @mira (the Telegram AI teammate). Drive
 > @mira from a userbot, capture its full reply (buttons, links, media, edits), and run a
 > self-driving experiment catalog. This file is the machine-readable spec for an agent to
 > use the tool without reverse-engineering it.
 
 ## Why a userbot
-@mira has no public API and Telegram forbids a bot from reading another bot's messages,
+@mira is chat-native (no public API) and Telegram forbids a bot from reading another bot's messages,
 so the only programmatic path is a userbot (a real user account over MTProto / GramJS).
 
 ## Setup
