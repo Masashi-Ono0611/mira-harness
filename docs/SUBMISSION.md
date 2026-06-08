@@ -32,12 +32,12 @@ Drive the @mira Telegram bot from a userbot, capture its full reply (buttons, li
 - GramJS / MTProto userbot — the only programmatic path to @mira (it's chat-native — no public API — and a bot can't read another bot).
 ```
 
-## 説明 (description)
+## Description
 
 ```
-mira-harness is a developer tool for communicating with @mira, the Telegram AI teammate. @mira is chat-native (no public API), and Telegram forbids a bot from reading another bot's messages — so the only programmatic path is a userbot (a real user account over MTProto). mira-harness wraps that into a clean CLI, a TypeScript library, and an MCP server, so a human or an AI agent (Claude) can send a prompt to @mira and capture its full reply: not just the text, but buttons (incl. web_app / startapp), links, media, and streamed edits.
+mira-harness is a developer tool for communicating with @mira, the Telegram AI teammate. @mira is chat-native (no public API) and Telegram won't let one bot read another, so the only programmatic path is a userbot (a real account over MTProto). mira-harness wraps that into a CLI, a TypeScript library, and an MCP server, so a human or an AI agent (Claude) can prompt @mira and capture its full reply — not just text, but buttons (incl. web_app / startapp), links, media, and streamed edits.
 
-On top of that it runs a self-driving experiment catalog — 30 probes across model/memory, skills, generation, and wallet — paced like a human, observe-only by default (an allowlist + a STOP_MIRA kill switch keep it from clicking wallet/OAuth or spending credits), and distills each run into a Markdown report. The unique angle: one AI (Claude, via the MCP server) autonomously experiments on another AI (@mira), hands-free, and produces a reproducible record of how @mira actually behaves — which is exactly the Mira AI Track feedback (see docs/mira-feedback.md).
+It also runs a self-driving experiment catalog: 30 probes across model/memory, skills, generation, and wallet, human-paced and observe-only by default (an allowlist + a STOP_MIRA kill switch block wallet/OAuth clicks and credit spend), distilled into a Markdown report. The unique angle — one AI (Claude, via MCP) autonomously experiments on another (@mira), hands-free, producing a reproducible record of how @mira behaves: exactly the Mira AI Track feedback (see docs/mira-feedback.md).
 ```
 
 ## Links
@@ -48,6 +48,26 @@ npm:         https://www.npmjs.com/package/mira-harness
 Try it:      npx mira-harness doctor
 Feedback:    https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/mira-feedback.md
 Experiments: https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/experiments-log.md
+llms.txt:    https://github.com/Masashi-Ono0611/mira-harness/blob/main/llms.txt
+```
+
+## How Did You Use Mira?
+
+```
+Two ways. (1) @mira is the subject of the project: mira-harness drives @mira from a userbot — the only programmatic path, since @mira has no public API and Telegram won't let a bot read another bot — and lets Claude autonomously run ~50 probes across model/memory, skills, generation, and wallet, capturing each full reply (buttons incl. web_app / startapp, links, media, streamed edits) into a reproducible Markdown log. (2) @mira was also a build-time teammate — I used it to sanity-check TON / STON.fi specifics while building. So one AI (Claude, via the MCP server) experiments on another AI (@mira) hands-free, and the tool itself is the integration: it's how the feedback below was generated. Full log: docs/experiments-log.md.
+```
+
+## Challenges & Feedback
+
+```
+Biggest challenge: zero API keys, and @mira has no public API / SDK / CLI — so the only programmatic path was a userbot (a real account over MTProto). That workaround is why mira-harness exists. Other friction, all found driving @mira live:
+- Latency is high and variable (4.8s–61.6s); naive clients time out, so I added a "typing…" grace fallback.
+- /start payloads are ignored — an app → Mira handoff is dead; only Mira → app deep links work.
+- Skill output is a plain app.ston.fi URL, not a Telegram startapp "Launch" card.
+- Web research can hallucinate ("TON rebranded to Gram", "USDT launched 2026") — surface the source, never auto-execute.
+- The model isn't pinned: @mira self-reports GPT-5 Mini, not the MiniMax M2.5 the deck stated.
+
+Top asks: (1) an llms.txt for @mira (commands, skill triggers, cost gates, wallet scope) — cheapest, highest-leverage; (2) a scriptable CLI; (3) a read API / webhook, then a full SDK. Full writeup: docs/mira-feedback.md.
 ```
 
 ## Mira AI Track checklist
