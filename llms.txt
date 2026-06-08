@@ -1,0 +1,61 @@
+# mira-harness
+
+> A CLI + MCP dev-tool for experimenting on @mira (the Telegram AI teammate). Drive
+> @mira from a userbot, capture its full reply (buttons, links, media, edits), and run a
+> self-driving experiment catalog. This file is the machine-readable spec for an agent to
+> use the tool without reverse-engineering it.
+
+## Why a userbot
+@mira has no public API and Telegram forbids a bot from reading another bot's messages,
+so the only programmatic path is a userbot (a real user account over MTProto / GramJS).
+
+## Setup
+- `npm install`, then `cp .env.example .env`.
+- `.env`: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`, `MIRA_PEER=mira` (optional `TG_EXPERIMENT_CHAT`).
+- `TG_SESSION` = full account access. `.env` only, never commit, never log.
+- Mint the session once: `npm run login` (interactive) → paste `TG_SESSION=...` into `.env`.
+- Run via `npm run dev -- <args>`, or `npm run build` then `npx mira-harness <args>`.
+
+## CLI commands
+- `doctor` — env / session / connectivity / @mira resolution check (read-only). Run this first.
+- `send [message...]` — one probe → full reply as JSON. Message via arg or stdin. Flags: `--settle <ms> --timeout <ms> --quiet --no-log`.
+- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --quiet`. Observe-only unless `--confirm`.
+- `catalog` — list the catalog, no network. Flags: `--category --catalog <file.json> --json`.
+- `watch` — live-tail @mira's messages, observe-only. Flag: `--peer`.
+- `report` — distill the JSONL run log into Markdown. Flags: `--in <file> --out <file> --category`.
+- Help: `mira-harness --help` or `<command> --help`.
+
+## MCP server (bin: mira-harness-mcp, entry dist/mcp.js)
+A second frontend over the same core, for agents. Tools:
+- `mira_send` { message, settleMs?, timeoutMs? } — one probe → full reply (JSON).
+- `mira_loop` { category?, max?, peer?, gapMs?, settleMs?, timeoutMs?, catalogFile? } — run the catalog, **observe-only** (never clicks / spends credits).
+- `mira_catalog` { category?, catalogFile? } — list the catalog (no network).
+- `mira_report` { inFile?, category? } — run log → Markdown.
+- `mira_doctor` — env / session / connectivity check (no arguments).
+Credentials come from the MCP `env` block or a `.env` in the server's cwd.
+
+## Library
+`import { connect, sendAndCollect, clickAndCollect, extractMessage, CATALOG, probesFor, appendRun, renderReport, tgEnv } from "mira-harness"`.
+`const c = await connect(process.env.TG_SESSION!); const r = await sendAndCollect(c, "mira", "STON_USDT_10"); await c.disconnect();`
+`r.messages[i]` carries `text`, `buttons` (incl. web_app/startapp), `links`, `media`, `editCount`.
+
+## Custom catalog
+Point `--catalog <file.json>` (CLI) or `catalogFile` (MCP) at your own probe set to probe
+any bot. Each entry needs `id` + `send`; optional `category` / `hypothesis` / `slow` /
+`confirm` / `note`. See `examples/catalog.sample.json`.
+
+## Safety (always on)
+- Allowlist: sends only to `MIRA_PEER` (+ optional `TG_EXPERIMENT_CHAT`); anything else throws.
+- Kill switch: `touch STOP_MIRA` blocks all sends (re-checked before any credit-gated confirm).
+- Observe-only by default. CLI `--confirm` presses only a one-shot ✅ Confirm on `confirm:true`
+  (generation) probes; wallet / OAuth / transfer / "Always yes" are never pressed. MCP `mira_loop`
+  has no confirm at all.
+
+## Notes for an agent driving @mira
+- Replies are slow and variable (4.8s–61.6s); the settle window + "typing…" grace handle it. Don't shorten `--timeout` below ~60s for `wallet`/`generation`.
+- @mira's interesting output is outside the plain text — read `buttons` / `links` / `media`, not just `text`.
+- @mira's web research can hallucinate; surface its source link, never auto-execute on it.
+
+## Links
+- README: https://github.com/Masashi-Ono0611/mira-harness#readme
+- npm: https://www.npmjs.com/package/mira-harness

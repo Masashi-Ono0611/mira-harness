@@ -186,6 +186,11 @@ directory. Once published (the bin ships in the `mira-harness` package):
 > account. Low frequency + allowlist + kill switch mitigate it. To fully isolate, log
 > in with a dedicated test account — no code changes needed.
 
+## Docs
+
+- [`docs/`](docs/) — hackathon submission, Mira AI Track feedback, and the full experiment log.
+- [`llms.txt`](llms.txt) — LLM-facing spec so an agent can drive this tool without reverse-engineering it.
+
 ## Develop
 
 ```bash

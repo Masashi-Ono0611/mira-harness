@@ -18,7 +18,8 @@
   },
   "files": [
     "dist",
-    "examples"
+    "examples",
+    "llms.txt"
   ],
   "engines": {
     "node": ">=18"
