@@ -76,7 +76,7 @@ The track asks for three things:
 
 | Required | Where |
 |---|---|
-| ① Export your @mira chat history | (attach the Telegram "Export chat history" file) |
+| ① Export your @mira chat history | [`docs/mira-chat-history.txt`](mira-chat-history.txt) (userbot export); also attach Telegram's native "Export chat history" file |
 | ② Tell us what you built | the description above + the repo README |
 | ③ Share your feedback | [`docs/mira-feedback.md`](mira-feedback.md), backed by [`docs/experiments-log.md`](experiments-log.md) |
 
