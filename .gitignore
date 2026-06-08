@@ -11,5 +11,11 @@ STOP_MIRA
 # Run log (append-only machine log)
 mira-runs.jsonl
 
+# Demo / scratch artifacts (local only)
+demo.sh
+demo-report.md
+demo-runs.jsonl
+tmp-*.ts
+
 *.log
 .DS_Store
