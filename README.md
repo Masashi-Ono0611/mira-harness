@@ -15,6 +15,10 @@ is a **userbot** — driving a real Telegram *user account* via MTProto (GramJS)
 
 ## Install
 
+Published on [npm](https://www.npmjs.com/package/mira-harness) — run the CLI / MCP via
+`npx mira-harness <command>` (or `npm i -g mira-harness`). To develop or use
+`npm run login`, clone instead:
+
 ```bash
 git clone https://github.com/Masashi-Ono0611/mira-harness.git
 cd mira-harness
@@ -74,7 +78,7 @@ npm run dev -- loop --catalog ./examples/catalog.sample.json
 npm run dev -- report --category core
 ```
 
-After `npm run build` (or once published):
+After `npm run build`, or straight from npm (no clone needed):
 
 ```bash
 npx mira-harness doctor
@@ -170,7 +174,7 @@ Register it (local build — run `npm run build` first):
 ```
 
 Credentials come from the `env` block above or a `.env` in the server's working
-directory. Once published (the bin ships in the `mira-harness` package):
+directory. The bin ships in the published `mira-harness` package, so:
 `{ "command": "npx", "args": ["-y", "--package", "mira-harness", "mira-harness-mcp"] }`.
 
 ## Safety
