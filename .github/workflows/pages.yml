@@ -9,6 +9,9 @@ on:
     branches: [main]
     paths:
       - "docs/index.html"
+      - "docs/favicon.svg"
+      - "docs/apple-touch-icon.png"
+      - "docs/og.png"
       - "llms.txt"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -30,8 +33,11 @@ jobs:
       - name: Assemble curated _site
         run: |
           mkdir -p _site
-          cp docs/index.html _site/index.html
-          cp llms.txt        _site/llms.txt   # single source: repo-root llms.txt
+          cp docs/index.html          _site/index.html
+          cp docs/favicon.svg         _site/favicon.svg
+          cp docs/apple-touch-icon.png _site/apple-touch-icon.png
+          cp docs/og.png              _site/og.png
+          cp llms.txt                 _site/llms.txt   # single source: repo-root llms.txt
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
