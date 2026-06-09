@@ -167,9 +167,15 @@ Examples:
 `,
 );
 
-// Bare `mira-harness` (no command) -> launch screen: the preAction hook shows the
-// banner, then this prints the help. (-V / --help stay clean: handled before any action.)
-program.action(() => program.outputHelp());
+// Bare `mira-harness` (no command) -> launch screen: banner + help. Done explicitly
+// rather than via program.action(), which would swallow an unknown command as a
+// program argument and exit 0 instead of erroring on the typo. -V / --help and every
+// real command fall through to commander (which keeps its unknown-command error).
+if (process.argv.length <= 2) {
+  banner(version);
+  program.outputHelp();
+  process.exit(0);
+}
 
 program
   .parseAsync(process.argv)
