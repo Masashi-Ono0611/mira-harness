@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E8F6FE"/>
+      <stop offset="0.5" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#0098EA"/>
+
+  <!-- TON-style diamond mark -->
+  <g transform="translate(96,92)">
+    <circle cx="44" cy="44" r="44" fill="#0098EA"/>
+    <path d="M23 31 H65 L44 68 Z M44 31 V68" stroke="#fff" stroke-width="4.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+  <text x="212" y="124" font-family="Menlo, monospace" font-size="22" letter-spacing="3" font-weight="700" fill="#0098EA">STON.FI VIBE CODING · MIRA AI TRACK</text>
+
+  <text x="94" y="318" font-family="'Helvetica Neue', Arial, sans-serif" font-size="120" font-weight="800" fill="#11151A">mira-harness</text>
+
+  <text x="96" y="402" font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" fill="#5B6B78">@mira lives in chat, not code.</text>
+  <text x="96" y="454" font-family="'Helvetica Neue', Arial, sans-serif" font-size="40" font-weight="700" fill="#11151A">mira-harness bridges the gap.</text>
+
+  <text x="96" y="566" font-family="Menlo, monospace" font-size="26" fill="#0077C0">CLI · Library · MCP</text>
+  <text x="1104" y="566" text-anchor="end" font-family="Menlo, monospace" font-size="24" fill="#95A3AE">masashi-ono0611.github.io/mira-harness</text>
+</svg>
