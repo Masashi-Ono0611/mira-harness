@@ -12,7 +12,28 @@ import type { ProbeResult } from "../capture.js";
 import { RUNS_FILE } from "../log.js";
 import { CATEGORIES } from "../catalog.js";
 
-type RunRecord = ProbeResult & { probeId?: string; category?: string; hypothesis?: string };
+export type RunRecord = ProbeResult & { probeId?: string; category?: string; hypothesis?: string };
+
+/**
+ * Read the JSONL run log into records (malformed lines skipped). Throws ENOENT when
+ * the file is absent — callers decide how to surface that. Shared by `report` and
+ * `stats` so the two stay in lockstep on the log format.
+ */
+export function loadRunRecords(inFile?: string, category?: string): RunRecord[] {
+  const path = inFile ? resolve(process.cwd(), inFile) : RUNS_FILE;
+  const raw = readFileSync(path, "utf8"); // throws ENOENT when absent
+  const records: RunRecord[] = [];
+  for (const line of raw.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      records.push(JSON.parse(t) as RunRecord);
+    } catch {
+      // skip malformed lines silently
+    }
+  }
+  return category ? records.filter((r) => r.category === category) : records;
+}
 
 function truncate(s: string, n: number): string {
   const flat = s.replace(/\s+/g, " ").trim();
@@ -112,19 +133,7 @@ export interface ReportOptions {
  * and the MCP `mira_report` tool — neither writes to stdout from here.
  */
 export function renderReport(inFile?: string, category?: string): string {
-  const path = inFile ? resolve(process.cwd(), inFile) : RUNS_FILE;
-  const raw = readFileSync(path, "utf8"); // throws ENOENT when absent
-  let records: RunRecord[] = [];
-  for (const line of raw.split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
-    try {
-      records.push(JSON.parse(t) as RunRecord);
-    } catch {
-      // skip malformed lines silently
-    }
-  }
-  if (category) records = records.filter((r) => r.category === category);
+  const records = loadRunRecords(inFile, category);
   if (!records.length) {
     throw new Error(category ? `no probes in category "${category}" in the run log.` : "run log is empty.");
   }
