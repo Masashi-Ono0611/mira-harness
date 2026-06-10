@@ -14,6 +14,7 @@ import { login } from "./commands/login.js";
 import { send } from "./commands/send.js";
 import { loop } from "./commands/loop.js";
 import { report } from "./commands/report.js";
+import { stats } from "./commands/stats.js";
 import { doctor } from "./commands/doctor.js";
 import { listCatalog } from "./commands/catalog.js";
 import { watch } from "./commands/watch.js";
@@ -149,6 +150,16 @@ program
     report({ in: opts.in, out: opts.out, category: opts.category });
   });
 
+program
+  .command("stats")
+  .description("At-a-glance run-log dashboard: totals, latency records, sparkline")
+  .option("--in <file>", "input JSONL (default: the run log)")
+  .option("-c, --category <category>", "only include probes from this category")
+  .option("--json", "output a JSON summary instead of the colored dashboard", false)
+  .action((opts: { in?: string; category?: string; json: boolean }) => {
+    stats({ in: opts.in, category: opts.category, json: opts.json });
+  });
+
 program.addHelpText(
   "after",
   `
@@ -164,6 +175,7 @@ Examples:
   $ mira-harness catalog --json
   $ mira-harness watch
   $ mira-harness report --category core --out report.md
+  $ mira-harness stats
 `,
 );
 

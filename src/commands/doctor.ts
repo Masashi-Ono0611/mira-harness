@@ -7,7 +7,7 @@
  */
 import { tgEnv } from "../env.js";
 import { connect, resolvePeer } from "../client.js";
-import { c, note } from "../ui.js";
+import { c, note, mascot } from "../ui.js";
 
 export async function doctor(): Promise<void> {
   const pass = (m: string): void => note(`${c.green("✔")} ${m}`);
@@ -30,6 +30,10 @@ export async function doctor(): Promise<void> {
   else fail("TG_SESSION is empty — run `mira-harness login`");
 
   if (!apiOk || !session) {
+    if (process.stderr.isTTY) {
+      note("");
+      for (const l of mascot("sad")) note(c.red(l));
+    }
     note(c.yellow("\nFix .env, then re-run `mira-harness doctor`."));
     process.exit(1);
   }
@@ -56,6 +60,11 @@ export async function doctor(): Promise<void> {
     fail(`connect failed: ${e instanceof Error ? e.message : e}`);
   }
 
+  if (process.stderr.isTTY) {
+    note("");
+    const paint = ok ? c.green : c.red;
+    for (const l of mascot(ok ? "happy" : "sad")) note(paint(l));
+  }
   note(ok ? c.green("\nAll checks passed.") : c.red("\nSome checks failed."));
   process.exit(ok ? 0 : 1);
 }

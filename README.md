@@ -1,5 +1,13 @@
 # mira-harness — a CLI + MCP dev-tool for communicating with [@mira](https://t.me/mira)
 
+```text
+     *  .  *
+    .-------.
+    | o   o |     hi — I drive @mira so you don't have to copy-paste its replies.
+    |   ~   |     ( I blink ^_^ when doctor passes, and yawn -_- on a timeout. )
+    '-------'
+```
+
 Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
 (buttons, links, media, edits), and run a self-driving experiment catalog — from the
 **CLI**, as a **library**, or via **MCP**.
@@ -50,45 +58,27 @@ npm run login          # prints TG_SESSION=... -> paste it into .env
 Via `npm run dev -- <args>`, or build once (`npm run build`) and use the `mira-harness` bin / `npx`.
 
 ```bash
-# one probe — prints the full settled reply as JSON
+# one probe — full settled reply as JSON (message via arg or stdin)
 npm run dev -- send "STON_USDT_10"
-
-# self-driving catalog (paced 15s, STOP_MIRA kill switch, observe-only)
-npm run dev -- loop --category core
-npm run dev -- loop --category skills --max 4
-
-# also press a safe ✅ Confirm on generation probes (spends Pro credits)
-npm run dev -- loop --category generation --confirm
-
-# run in a group instead of the DM (needs TG_EXPERIMENT_CHAT)
-npm run dev -- loop --peer experiment
-
-# distill the run log into Markdown
-npm run dev -- report
-npm run dev -- report --out report.md
-
-# preflight checks (env / session / connectivity) and list the catalog
-npm run dev -- doctor
-npm run dev -- catalog
-npm run dev -- loop --list
-
-# message via stdin; tune timing; quiet (no spinner); skip the run log
 echo "STON_USDT_10" | npm run dev -- send
-npm run dev -- send "ping" --settle 3000 --timeout 30000 --quiet --no-log
 
-# live-tail @mira while you poke at it by hand; custom catalog; filtered report
-npm run dev -- watch
-npm run dev -- loop --catalog ./examples/catalog.sample.json
-npm run dev -- report --category core
+# self-driving catalog — paced, STOP_MIRA kill switch, observe-only
+npm run dev -- loop --category core
+npm run dev -- loop --category generation --confirm   # also taps a safe ✅ (spends Pro credits)
+
+# read the results back
+npm run dev -- report --out report.md                 # JSONL run log → Markdown
+npm run dev -- stats                                  # totals · latency records · 🏆 fastest · sparkline
+
+# no-send commands: preflight, dry-run, live-tail
+npm run dev -- doctor
+npm run dev -- loop --list
+npm run dev -- watch                                  # watch @mira while you poke it by hand
 ```
 
-After `npm run build`, or straight from npm (no clone needed):
-
-```bash
-npx mira-harness doctor
-npx mira-harness send "STON_USDT_10"
-npx mira-harness loop --category core
-```
+Once built (`npm run build`) or installed (`npm i -g mira-harness`), the same commands run as
+`mira-harness <command>` — or straight from npm with no clone: `npx mira-harness doctor`.
+Every command and flag is in [Commands](#commands); custom catalogs in [Custom catalog](#custom-catalog).
 
 ## Capture fidelity (the point)
 
@@ -114,8 +104,25 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 | `catalog` | List the catalog (no sends). `--category --catalog --json` |
 | `watch` | Live-tail @mira's messages (observe-only). `--peer` |
 | `report` | Distill the run log into Markdown. `--in --out --category` |
+| `stats` | At-a-glance dashboard: totals, latency records, sparkline. `--in --category --json` |
 
 Run `mira-harness --help` (or `<command> --help`) for full options.
+
+## Terminal flair
+
+Because waiting on a bot shouldn't be boring:
+
+- **Mascot** greets you on startup, **blinks `^_^`** when `doctor` passes and **`x_x`** when it fails.
+- **Rotating tips** under the banner surface a hidden flag each day.
+- **Playful spinner** — @mira can take 5–62s, so the wait cycles through verbs ("Summoning…",
+  "Consulting the chain…", and a reassuring "Still pondering…" past 30s) next to the elapsed time.
+- **Tab-title progress** during `loop` (`mira loop 3/6 · core`) so you can background it.
+- **Completion ping** — a terminal notification (OSC 9) when a `loop` finishes.
+
+It never gets in the way: **all decoration goes to stderr** (stdout stays machine-clean for
+JSON / Markdown) and only on an interactive TTY. Silence it with `--quiet`, `NO_COLOR`, or
+per-feature flags — `MIRA_NO_BANNER=1` (mascot + tip), `MIRA_NO_NOTIFY=1` (completion ping),
+`MIRA_NO_TITLE=1` (tab title).
 
 ### Custom catalog
 

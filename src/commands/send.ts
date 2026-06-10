@@ -55,7 +55,7 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
   const client = await connect(session);
   try {
     const result = await withProgress(
-      `waiting for @${peer}`,
+      `@${peer}`,
       () => sendAndCollect(client, peer, message, collect),
       opts.quiet,
     );

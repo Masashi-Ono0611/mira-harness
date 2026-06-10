@@ -20,7 +20,7 @@ import { tgEnv } from "../env.js";
 import { connect, sendAndCollect, clickAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
 import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "../catalog.js";
-import { c, note, withProgress } from "../ui.js";
+import { c, note, withProgress, setTitle, clearTitle, notify } from "../ui.js";
 import { listCatalog } from "./catalog.js";
 
 const STOP_FILE = "STOP_MIRA";
@@ -142,6 +142,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
         break;
       }
       const p = probes[i];
+      if (!opts.quiet) setTitle(`mira loop ${i + 1}/${probes.length} · ${p.category}`);
       const result = await withProgress(
         `${p.id} -> @${peer}`,
         () => sendAndCollect(client, peer, p.send, collectFor(p, opts)),
@@ -176,7 +177,9 @@ export async function loop(opts: LoopOptions): Promise<void> {
       if (i < probes.length - 1) await sleep(gap);
     }
   } finally {
+    clearTitle();
     await client.disconnect();
   }
   note(c.green(`done — ${ran} probe(s) logged.`));
+  notify(`mira loop done — ${ran} probe(s) logged`, { quiet: opts.quiet });
 }
