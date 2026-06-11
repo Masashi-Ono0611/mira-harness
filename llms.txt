@@ -37,7 +37,7 @@ Credentials come from the MCP `env` block or a `.env` in the server's cwd.
 
 ## Library
 `import { connect, sendAndCollect, clickAndCollect, extractMessage, CATALOG, probesFor, appendRun, renderReport, tgEnv } from "mira-harness"`.
-`const c = await connect(process.env.TG_SESSION!); const r = await sendAndCollect(c, "mira", "STON_USDT_10"); await c.disconnect();`
+`const c = await connect(process.env.TG_SESSION!); const r = await sendAndCollect(c, "mira", "What can you do?"); await c.disconnect();`
 `r.messages[i]` carries `text`, `buttons` (incl. web_app/startapp), `links`, `media`, `editCount`.
 
 ## Custom catalog

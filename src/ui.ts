@@ -48,7 +48,7 @@ const WORDMARK = [
 
 /** Rotating one-liners surfaced under the banner — discoverability for hidden flags. */
 const TIPS = [
-  'echo "STON_USDT_10" | mira-harness send   — pipe a probe from stdin',
+  'echo "What can you do?" | mira-harness send   — pipe a probe from stdin',
   "mira-harness loop --list   — preview the probes without sending anything",
   "touch STOP_MIRA   — instant kill switch; blocks every send until removed",
   "mira-harness loop --catalog ./my.json   — run your own probe catalog",

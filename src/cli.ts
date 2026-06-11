@@ -163,8 +163,8 @@ program.addHelpText(
 Examples:
   $ mira-harness login
   $ mira-harness doctor
-  $ mira-harness send "STON_USDT_10"
-  $ echo "STON_USDT_10" | mira-harness send
+  $ mira-harness send "What can you do?"
+  $ echo "What can you do?" | mira-harness send
   $ mira-harness loop --category core
   $ mira-harness loop --list
   $ mira-harness loop --category generation --confirm

@@ -29,7 +29,7 @@ test("links: a text_url (source link) + a bare url", () => {
   const links = extractLinks(text, entities as unknown as Api.TypeMessageEntity[]);
   assert.equal(links.length, 2);
   assert.deepEqual(links[0], { text: "STON.fi", url: "https://ston.fi" });
-  assert.equal(links[1].url, "https://ston.fi/news");
+  assert.equal(links[1]!.url, "https://ston.fi/news");
 });
 
 test("buttons: Mini App Launch (web_app/startapp) + url + callback", () => {
@@ -41,7 +41,7 @@ test("buttons: Mini App Launch (web_app/startapp) + url + callback", () => {
           {
             className: "KeyboardButtonWebView",
             text: "Launch",
-            url: "https://t.me/tribemind_bot?startapp=STON_USDT_10",
+            url: "https://t.me/gram_bot?startapp=GRAM_10",
           },
           { className: "KeyboardButtonUrl", text: "Docs", url: "https://wiki.mira.tg" },
         ],
@@ -51,10 +51,10 @@ test("buttons: Mini App Launch (web_app/startapp) + url + callback", () => {
   };
   const buttons = extractButtons(markup as unknown as Api.TypeReplyMarkup);
   assert.equal(buttons.length, 3);
-  assert.equal(buttons[0].webAppUrl, "https://t.me/tribemind_bot?startapp=STON_USDT_10");
-  assert.equal(buttons[0].url, undefined);
-  assert.equal(buttons[1].url, "https://wiki.mira.tg");
-  assert.equal(buttons[2].callbackData, Buffer.from("yes").toString("base64"));
+  assert.equal(buttons[0]!.webAppUrl, "https://t.me/gram_bot?startapp=GRAM_10");
+  assert.equal(buttons[0]!.url, undefined);
+  assert.equal(buttons[1]!.url, "https://wiki.mira.tg");
+  assert.equal(buttons[2]!.callbackData, Buffer.from("yes").toString("base64"));
 });
 
 test("non-inline markup yields no buttons", () => {

@@ -23,6 +23,12 @@ jobs:
       - run: bun run typecheck
       - run: bun test
       - run: bun run build
+      # Publish hygiene: validate package.json/exports/files (publint) and that the
+      # types resolve across module systems (attw; ESM-only by design, so the CJS
+      # require path is intentionally ignored).
+      - run: bun run check:publish
+      # Advisory AI-slop scan (never blocks — surfaces the score in the log).
+      - run: bun run slop
       # Smoke: the published artifacts must run on plain Node — consumers use npx /
       # node, never bun. Guards the "bun-first dev, Node-compatible output" contract:
       # the CLI is fully executed; both bins + the library entry are Node-parseable.
