@@ -7,7 +7,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { z } from "zod";
-import { CATALOG, CatalogSchema, grepProbes, loadCatalog, probesFor } from "../src/catalog.js";
+import { CATALOG, CatalogSchema, grepProbes, loadCatalog, onlyProbes, probesFor } from "../src/catalog.js";
 
 const dir = mkdtempSync(join(tmpdir(), "mh-"));
 
@@ -63,6 +63,14 @@ test("grepProbes: regex on id, case-insensitive, substring fallback on bad regex
   assert.ok(grepProbes(CATALOG, "core-").length >= 5); // prefix matches the core-* probes
   assert.equal(grepProbes(CATALOG, "no-such-probe").length, 0);
   assert.ok(Array.isArray(grepProbes(CATALOG, "core-json("))); // invalid regex -> no throw, falls back
+});
+
+test("onlyProbes: exact id selection from a comma-separated list", () => {
+  assert.equal(onlyProbes(CATALOG, "core-json").length, 1);
+  assert.equal(onlyProbes(CATALOG, "core-json, core-model").length, 2); // whitespace trimmed
+  assert.equal(onlyProbes(CATALOG, "core-json,nope").length, 1); // unknown id ignored
+  assert.equal(onlyProbes(CATALOG, "core").length, 0); // exact, not prefix
+  assert.equal(onlyProbes(CATALOG, "").length, 0);
 });
 
 test("CatalogSchema -> JSON Schema includes probe fields (for `schema` command)", () => {

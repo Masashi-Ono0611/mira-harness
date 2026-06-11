@@ -298,3 +298,15 @@ export function grepProbes(probes: Probe[], pattern: string): Probe[] {
   const needle = pattern.toLowerCase();
   return probes.filter((p) => p.id.toLowerCase().includes(needle));
 }
+
+/** Keep only probes whose `id` is in the comma-separated list (exact match).
+ *  Used by `loop --only` for precise selection. */
+export function onlyProbes(probes: Probe[], idsCsv: string): Probe[] {
+  const ids = new Set(
+    idsCsv
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+  return probes.filter((p) => ids.has(p.id));
+}

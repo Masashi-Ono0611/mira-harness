@@ -7,6 +7,7 @@
  * catalog — no screenshots, no copy-paste.
  */
 import { Command } from "commander";
+import { type Expect, ExpectSchema } from "./assert.js";
 import { CATEGORIES } from "./catalog.js";
 import { assertLog } from "./commands/assert.js";
 import { listCatalog } from "./commands/catalog.js";
@@ -19,7 +20,7 @@ import { schema } from "./commands/schema.js";
 import { send } from "./commands/send.js";
 import { stats } from "./commands/stats.js";
 import { watch } from "./commands/watch.js";
-import { banner } from "./ui.js";
+import { banner, c } from "./ui.js";
 import { getVersion } from "./version.js";
 
 /** Parse a non-negative millisecond option; reject NaN/Infinity/negative (would
@@ -42,6 +43,45 @@ function posInt(name: string, v: string): number {
     process.exit(1);
   }
   return n;
+}
+
+/** Parse a non-negative integer option (allows 0, e.g. --expect-min-links). */
+function nonNegInt(name: string, v: string): number {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0) {
+    console.error(`--${name} must be a non-negative integer (got "${v}")`);
+    process.exit(1);
+  }
+  return n;
+}
+
+/** Build an Expect from the `send --expect-*` flags (validated by the schema). */
+function buildSendExpect(o: {
+  expectReply?: boolean;
+  expectJson?: boolean;
+  expectText?: string;
+  expectMinLinks?: string;
+  expectMinButtons?: string;
+  expectWebapp?: boolean;
+  expectMedia?: string;
+  expectMaxMs?: string;
+}): Expect | undefined {
+  const raw: Record<string, unknown> = {};
+  if (o.expectReply) raw.replies = true;
+  if (o.expectJson) raw.json = true;
+  if (o.expectText !== undefined) raw.textMatches = o.expectText;
+  if (o.expectMinLinks !== undefined) raw.minLinks = nonNegInt("expect-min-links", o.expectMinLinks);
+  if (o.expectMinButtons !== undefined) raw.minButtons = nonNegInt("expect-min-buttons", o.expectMinButtons);
+  if (o.expectWebapp) raw.hasWebApp = true;
+  if (o.expectMedia !== undefined) raw.media = o.expectMedia;
+  if (o.expectMaxMs !== undefined) raw.maxFirstReplyMs = ms("expect-max-ms", o.expectMaxMs);
+  if (!Object.keys(raw).length) return undefined;
+  const parsed = ExpectSchema.safeParse(raw);
+  if (!parsed.success) {
+    console.error(`invalid --expect-* value: ${parsed.error.issues[0]?.message ?? "schema error"}`);
+    process.exit(1);
+  }
+  return parsed.data;
 }
 
 const program = new Command();
@@ -72,14 +112,41 @@ program
   .option("--settle <ms>", "quiet window before concluding a reply")
   .option("--timeout <ms>", "give up if no reply by this many ms")
   .option("--no-log", "do not append the result to the run log")
-  .action(async (parts: string[], opts: { quiet: boolean; settle?: string; timeout?: string; log: boolean }) => {
-    await send(parts.join(" "), {
-      quiet: opts.quiet,
-      settle: ms("settle", opts.settle),
-      timeout: ms("timeout", opts.timeout),
-      noLog: opts.log === false,
-    });
-  });
+  .option("--expect-reply", "assert a reply arrives (any --expect-* exits 1 on failure)")
+  .option("--expect-json", "assert the first reply text is valid JSON")
+  .option("--expect-text <regex>", "assert some reply text matches this regex (case-insensitive)")
+  .option("--expect-min-links <n>", "assert at least N links across the reply")
+  .option("--expect-min-buttons <n>", "assert at least N inline buttons")
+  .option("--expect-webapp", "assert a web_app/startapp Launch button is present")
+  .option("--expect-media <kind>", "assert media of this kind (photo|video|audio|document|webpage|other)")
+  .option("--expect-max-ms <ms>", "assert the first reply arrives within this many ms")
+  .action(
+    async (
+      parts: string[],
+      opts: {
+        quiet: boolean;
+        settle?: string;
+        timeout?: string;
+        log: boolean;
+        expectReply?: boolean;
+        expectJson?: boolean;
+        expectText?: string;
+        expectMinLinks?: string;
+        expectMinButtons?: string;
+        expectWebapp?: boolean;
+        expectMedia?: string;
+        expectMaxMs?: string;
+      },
+    ) => {
+      await send(parts.join(" "), {
+        quiet: opts.quiet,
+        settle: ms("settle", opts.settle),
+        timeout: ms("timeout", opts.timeout),
+        noLog: opts.log === false,
+        expect: buildSendExpect(opts),
+      });
+    },
+  );
 
 program
   .command("loop")
@@ -94,6 +161,7 @@ program
   .option("--list", "list the probes that would run, then exit (no sends)", false)
   .option("--catalog <file>", "custom catalog JSON file (instead of the built-in catalog)")
   .option("--grep <pattern>", "run only probes whose id matches this regex (case-insensitive)")
+  .option("--only <ids>", "run only probes with these comma-separated ids (exact match)")
   .option("--no-fail", "report failed assertions but still exit 0 (default: exit 1 on failure)")
   .option("-q, --quiet", "suppress progress spinners", false)
   .action(
@@ -108,6 +176,7 @@ program
       list: boolean;
       catalog?: string;
       grep?: string;
+      only?: string;
       fail: boolean;
       quiet: boolean;
     }) => {
@@ -122,6 +191,7 @@ program
         list: opts.list,
         catalog: opts.catalog,
         grep: opts.grep,
+        only: opts.only,
         noFail: opts.fail === false,
         quiet: opts.quiet,
       });
@@ -220,13 +290,19 @@ Examples:
 `,
 );
 
-// Bare `mira-harness` (no command) -> launch screen: banner + help. Done explicitly
-// rather than via program.action(), which would swallow an unknown command as a
-// program argument and exit 0 instead of erroring on the typo. -V / --help and every
-// real command fall through to commander (which keeps its unknown-command error).
+// Bare `mira-harness` (no command) -> a CONCISE launch screen (banner + one-screen
+// summary), not the full help — `--help` / `<command> --help` stay comprehensive.
+// Done explicitly rather than via program.action(), which would swallow an unknown
+// command as a program argument and exit 0 instead of erroring on the typo. -V /
+// --help and every real command fall through to commander (keeps unknown-cmd error).
 if (process.argv.length <= 2) {
   banner(version);
-  program.outputHelp();
+  console.log("  Drive @mira from your terminal — QA, learn, and assert on its behavior.\n");
+  console.log(`  Commands  ${c.cyan("login · doctor · send · loop · catalog · watch")}`);
+  console.log(`            ${c.cyan("report · stats · diff · assert · schema")}\n`);
+  console.log(
+    `  Run ${c.bold("mira-harness --help")} for options + examples, or ${c.bold("mira-harness <command> --help")}.`,
+  );
   process.exit(0);
 }
 

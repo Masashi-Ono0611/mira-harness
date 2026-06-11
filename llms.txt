@@ -18,8 +18,8 @@ so the only programmatic path is a userbot (a real user account over MTProto / G
 
 ## CLI commands
 - `doctor` — env / session / connectivity / @mira resolution check (read-only). Run this first.
-- `send [message...]` — one probe → full reply as JSON. Message via arg or stdin. Flags: `--settle <ms> --timeout <ms> --quiet --no-log`.
-- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --grep <regex> --no-fail --quiet`. Observe-only unless `--confirm`. Grades probes that declare `expect` (PASS/FAIL) and **exits non-zero** if any graded probe fails (`--no-fail` to report without failing) — drops straight into CI. `--grep <regex>` runs only probes whose id matches.
+- `send [message...]` — one probe → full reply as JSON. Message via arg or stdin. Flags: `--settle <ms> --timeout <ms> --quiet --no-log`. Inline assertions (any sets exit 1 on failure): `--expect-reply --expect-json --expect-text <regex> --expect-min-links <n> --expect-min-buttons <n> --expect-webapp --expect-media <kind> --expect-max-ms <ms>`.
+- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --grep <regex> --no-fail --quiet`. Observe-only unless `--confirm`. Grades probes that declare `expect` (PASS/FAIL) and **exits non-zero** if any graded probe fails (`--no-fail` to report without failing) — drops straight into CI. `--grep <regex>` runs only probes whose id matches; `--only <id1,id2>` selects exact ids.
 - `catalog` — list the catalog, no network. Flags: `--category --catalog <file.json> --json`.
 - `watch` — live-tail @mira's messages, observe-only. Flag: `--peer`.
 - `report` — distill the JSONL run log into Markdown. Flags: `--in <file> --out <file> --category`.

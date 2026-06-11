@@ -1,7 +1,7 @@
 /**
  * List the experiment catalog without sending anything (also powers `loop --list`).
  */
-import { CATALOG, CATEGORIES, grepProbes, loadCatalog, type Probe, probesFor } from "../catalog.js";
+import { CATALOG, CATEGORIES, grepProbes, loadCatalog, onlyProbes, type Probe, probesFor } from "../catalog.js";
 import { c, note } from "../ui.js";
 
 export interface CatalogOptions {
@@ -12,6 +12,8 @@ export interface CatalogOptions {
   catalog?: string;
   /** Keep only probes whose id matches this regex (case-insensitive). */
   grep?: string;
+  /** Keep only probes whose id is in this comma-separated list (exact match). */
+  only?: string;
 }
 
 export function listCatalog(opts: CatalogOptions = {}): void {
@@ -24,6 +26,7 @@ export function listCatalog(opts: CatalogOptions = {}): void {
   }
   let probes = probesFor(opts.category, source);
   if (opts.grep) probes = grepProbes(probes, opts.grep);
+  if (opts.only) probes = onlyProbes(probes, opts.only);
   if (opts.max !== undefined) probes = probes.slice(0, opts.max);
 
   if (opts.json) {
