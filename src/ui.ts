@@ -59,13 +59,14 @@ const TIPS = [
 ];
 
 /**
- * Print the mira mascot + wordmark, Claude-Code-style. Decoration only, so it
- * follows the same rules as the spinner: goes to stderr, only on an interactive
- * TTY (skipped when piped / CI so stdout stays machine-clean), and suppressed by
- * `quiet` or `MIRA_NO_BANNER=1`. Color via picocolors (auto-honors NO_COLOR).
+ * Print the mira mascot + wordmark, Claude-Code-style. Decoration only: goes to
+ * stderr and shows ONLY when both stderr AND stdout are interactive TTYs — so
+ * redirecting or piping output (e.g. `schema > file`, `send … | jq`) shows no
+ * banner at all. Also suppressed by `quiet`, `MIRA_NO_BANNER=1`, or CI (non-TTY).
+ * Color via picocolors (auto-honors NO_COLOR).
  */
 export function banner(version: string, opts: { quiet?: boolean } = {}): void {
-  if (opts.quiet || process.env.MIRA_NO_BANNER || !process.stderr.isTTY) return;
+  if (opts.quiet || process.env.MIRA_NO_BANNER || !process.stderr.isTTY || !process.stdout.isTTY) return;
   const tip = TIPS[new Date().getDate() % TIPS.length]; // rotates daily
   const lines = [
     ...mascot("neutral").map((l) => c.magenta(l)),
