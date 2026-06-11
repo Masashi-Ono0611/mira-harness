@@ -5,7 +5,7 @@
  *
  *   import { connect, sendAndCollect } from "mira-harness";
  *   const client = await connect(process.env.TG_SESSION!);
- *   const result = await sendAndCollect(client, "mira", "STON_USDT_10");
+ *   const result = await sendAndCollect(client, "mira", "What can you do?");
  *
  * The CLI (bin: `mira-harness`) and the MCP server are thin frontends over this.
  */

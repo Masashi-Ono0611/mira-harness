@@ -135,12 +135,11 @@ server.registerTool(
     try {
       let stopped = false;
       await withClient(async (client) => {
-        for (let i = 0; i < probes.length; i++) {
+        for (const [i, p] of probes.entries()) {
           if (existsSync(STOP_FILE)) {
             stopped = true;
             break;
           }
-          const p = probes[i];
           const r = await sendAndCollect(client, target, p.send, collectFor(p, settleMs, timeoutMs));
           await appendRun(r, { probeId: p.id, category: p.category, hypothesis: p.hypothesis });
           results.push({

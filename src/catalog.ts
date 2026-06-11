@@ -116,42 +116,36 @@ export const CATALOG: Probe[] = [
 
   // --- skills & deep-link ------------------------------------------------------
   {
-    id: "skill-fire",
+    id: "skill-capabilities",
     category: "skills",
-    hypothesis: "FROM_TO_AMOUNT fires the swap skill -> Launch card (startapp) + research.",
-    send: "STON_USDT_10",
+    hypothesis: "Does Mira enumerate its capabilities and surface buttons/links?",
+    send: "What can you do? List your main capabilities.",
+  },
+  {
+    id: "skill-research",
+    category: "skills",
+    hypothesis: "Web research returns source links (text_url) the harness can capture.",
+    send: "Search the web for the latest TON ecosystem news and give me 3 source links.",
     slow: true,
-    note: "expect buttons[].webAppUrl (startapp deep link) + research links",
+    note: "expect links[] (text_url source links) from deep research",
   },
   {
-    id: "skill-lower",
+    id: "skill-translate",
     category: "skills",
-    hypothesis: "Is skill activation case-sensitive? (lowercase pattern)",
-    send: "ston_usdt_10",
-  },
-  {
-    id: "skill-spaces",
-    category: "skills",
-    hypothesis: "Does the skill fire on space-separated form instead of underscores?",
-    send: "STON USDT 10",
-  },
-  {
-    id: "skill-noamount",
-    category: "skills",
-    hypothesis: "Does FROM_TO without an amount fire the skill?",
-    send: "STON_USDT",
-  },
-  {
-    id: "skill-start",
-    category: "skills",
-    hypothesis: "Re-confirm: /start <payload> is ignored (fixed welcome).",
-    send: "/start tribemind_test_payload",
+    hypothesis: "General language skill — multi-language translation in one reply.",
+    send: "Translate 'Good morning, TON builders!' into Japanese, Korean, and Thai.",
   },
   {
     id: "skill-list",
     category: "skills",
     hypothesis: "Can Mira enumerate the custom skills configured on this account?",
     send: "List the custom skills I currently have set up.",
+  },
+  {
+    id: "skill-start",
+    category: "skills",
+    hypothesis: "What does the /start welcome surface (commands / buttons)?",
+    send: "/start",
   },
 
   // --- generation (consumes Pro credits) --------------------------------------
@@ -228,20 +222,6 @@ export const CATALOG: Probe[] = [
   },
 
   // --- extended skills --------------------------------------------------------
-  {
-    id: "skill-reverse",
-    category: "skills",
-    hypothesis: "Reverse direction — does the swap link flip ft/tt for USDT_STON?",
-    send: "USDT_STON_10",
-    slow: true,
-  },
-  {
-    id: "skill-other-pair",
-    category: "skills",
-    hypothesis: "Does the swap skill generalize beyond STON (e.g. TON_USDT)?",
-    send: "TON_USDT_5",
-    slow: true,
-  },
   {
     id: "skill-create",
     category: "skills",

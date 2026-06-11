@@ -60,8 +60,8 @@ Via `bun run dev -- <args>`, or build once (`bun run build`) and use the `mira-h
 
 ```bash
 # one probe — full settled reply as JSON (message via arg or stdin)
-bun run dev -- send "STON_USDT_10"
-echo "STON_USDT_10" | bun run dev -- send
+bun run dev -- send "What can you do?"
+echo "What can you do?" | bun run dev -- send
 
 # self-driving catalog — paced, STOP_MIRA kill switch, observe-only
 bun run dev -- loop --category core
@@ -127,7 +127,7 @@ per-feature flags — `MIRA_NO_BANNER=1` (mascot + tip), `MIRA_NO_NOTIFY=1` (com
 
 ### Custom catalog
 
-The built-in catalog (30 probes: `core` / `skills` / `generation` / `wallet`) is just a
+The built-in catalog (27 probes: `core` / `skills` / `generation` / `wallet`) is just a
 default. Point `--catalog <file.json>` (CLI) or `catalogFile` (MCP) at your own probe set
 to probe any bot — each entry needs `id` + `send` (`category` / `hypothesis` / `slow` /
 `confirm` / `note` optional). See [`examples/catalog.sample.json`](examples/catalog.sample.json):
@@ -145,7 +145,7 @@ The CLI is a thin frontend over an exported core:
 import { connect, sendAndCollect } from "mira-harness";
 
 const client = await connect(process.env.TG_SESSION!);
-const result = await sendAndCollect(client, "mira", "STON_USDT_10");
+const result = await sendAndCollect(client, "mira", "What can you do?");
 console.log(result.messages[0]?.buttons); // captured buttons (incl. web_app/startapp)
 await client.disconnect();
 ```
@@ -220,6 +220,8 @@ bun run lint            # biome check (lint + format) · `bun run format` to aut
 bun run typecheck       # tsc --noEmit
 bun test                # bun:test unit tests (no network)
 bun run build           # bun build -> dist (+ tsc declarations)
+bun run check:publish   # publint + attw — validate the package & type resolution
+bun run slop            # advisory AI-slop scan (never fails)
 ```
 
 ## License

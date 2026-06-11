@@ -19,8 +19,8 @@ const SPARK = "▁▂▃▄▅▆▇█";
 /** Map a series to a Unicode sparkline, normalized between its own min and max. */
 export function sparkline(values: number[]): string {
   if (!values.length) return "";
-  let min = values[0];
-  let max = values[0];
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
   for (const v of values) {
     if (v < min) min = v;
     if (v > max) max = v;
@@ -33,7 +33,7 @@ export function sparkline(values: number[]): string {
 export function percentile(sortedAsc: number[], p: number): number {
   if (!sortedAsc.length) return 0;
   const idx = Math.min(sortedAsc.length - 1, Math.floor((p / 100) * sortedAsc.length));
-  return sortedAsc[idx];
+  return sortedAsc[idx] ?? 0;
 }
 
 const secs = (ms: number): string => `${(ms / 1000).toFixed(1)}s`;

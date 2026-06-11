@@ -3,7 +3,7 @@
  * (all messages + edits + buttons/links/media), and append it to the run log.
  *
  *   mira-harness send "your message to @mira"
- *   echo "STON_USDT_10" | mira-harness send       # message via stdin
+ *   echo "What can you do?" | mira-harness send       # message via stdin
  *
  * Kill switch: create a file named STOP_MIRA in the cwd to block sends.
  */

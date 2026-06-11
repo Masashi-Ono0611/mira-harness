@@ -17,5 +17,11 @@
       "recommended": true,
       "suspicious": { "noControlCharactersInRegex": "off" }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["tests/**"],
+      "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
+    }
+  ]
 }

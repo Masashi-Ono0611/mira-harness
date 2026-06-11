@@ -21,11 +21,11 @@ test("valid custom catalog — defaults applied, fields preserved", () => {
   );
   const probes = loadCatalog(file);
   assert.equal(probes.length, 2);
-  assert.equal(probes[0].category, "custom"); // default
-  assert.equal(probes[0].hypothesis, ""); // default
-  assert.equal(probes[1].category, "k");
-  assert.equal(probes[1].slow, true);
-  assert.equal(probes[1].confirm, true);
+  assert.equal(probes[0]!.category, "custom"); // default
+  assert.equal(probes[0]!.hypothesis, ""); // default
+  assert.equal(probes[1]!.category, "k");
+  assert.equal(probes[1]!.slow, true);
+  assert.equal(probes[1]!.confirm, true);
 
   // probesFor honors a custom source + category filter
   assert.equal(probesFor("k", probes).length, 1);

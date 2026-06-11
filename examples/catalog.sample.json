@@ -12,11 +12,10 @@
     "send": "/help"
   },
   {
-    "id": "swap-link",
+    "id": "capabilities",
     "category": "skills",
-    "hypothesis": "A FROM_TO_AMOUNT pattern yields a swap link",
-    "send": "STON_USDT_10",
-    "slow": true,
+    "hypothesis": "Bot enumerates what it can do (buttons / links)",
+    "send": "What can you do?",
     "note": "id + send are required; category/hypothesis/slow/confirm/note are optional"
   }
 ]

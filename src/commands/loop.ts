@@ -139,12 +139,11 @@ export async function loop(opts: LoopOptions): Promise<void> {
   const client = await connect(session);
   let ran = 0;
   try {
-    for (let i = 0; i < probes.length; i++) {
+    for (const [i, p] of probes.entries()) {
       if (existsSync(STOP_FILE)) {
         note(c.yellow(`${STOP_FILE} present — stopping (ran ${ran}/${probes.length}).`));
         break;
       }
-      const p = probes[i];
       if (!opts.quiet) setTitle(`mira loop ${i + 1}/${probes.length} · ${p.category}`);
       const result = await withProgress(
         `${p.id} -> @${peer}`,

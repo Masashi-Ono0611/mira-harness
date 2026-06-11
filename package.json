@@ -1,6 +1,6 @@
 {
   "name": "mira-harness",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "A CLI + MCP dev-tool for communicating with the @mira Telegram bot — capture its full reply (buttons/links/media) and run a self-driving experiment catalog.",
   "type": "module",
   "bin": {
@@ -34,6 +34,8 @@
     "clean": "rm -rf dist",
     "build": "bun run clean && bun build src/cli.ts src/mcp.ts src/index.ts --target=node --format=esm --outdir=dist --packages=external && bun run build:types",
     "build:types": "tsc -p tsconfig.build.json",
+    "check:publish": "publint && attw --pack . --ignore-rules cjs-resolves-to-esm",
+    "slop": "bunx slop-scan@latest scan . || true",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
@@ -64,9 +66,11 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.3",
     "@biomejs/biome": "^2.4.16",
     "@types/bun": "^1.3.14",
     "@types/node": "^22",
+    "publint": "^0.3.21",
     "typescript": "^5"
   }
 }
