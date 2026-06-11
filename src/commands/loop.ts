@@ -17,7 +17,7 @@
  */
 import { existsSync } from "node:fs";
 import { evaluate, type Verdict } from "../assert.js";
-import { CATALOG, CATEGORIES, grepProbes, loadCatalog, type Probe, probesFor } from "../catalog.js";
+import { CATALOG, CATEGORIES, grepProbes, loadCatalog, onlyProbes, type Probe, probesFor } from "../catalog.js";
 import { type CollectOptions, clickAndCollect, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
 import { appendRun } from "../log.js";
@@ -89,6 +89,8 @@ export interface LoopOptions {
   noFail?: boolean;
   /** Run only probes whose id matches this regex (case-insensitive). */
   grep?: string;
+  /** Run only probes whose id is in this comma-separated list (exact match). */
+  only?: string;
 }
 
 function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
@@ -106,7 +108,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
   }
 
   if (opts.list) {
-    listCatalog({ category: opts.category, max: opts.max, catalog: opts.catalog, grep: opts.grep }); // honor --max/--grep + custom catalog
+    listCatalog({ category: opts.category, max: opts.max, catalog: opts.catalog, grep: opts.grep, only: opts.only }); // honor --max/--grep/--only + custom catalog
     return;
   }
 
@@ -130,12 +132,13 @@ export async function loop(opts: LoopOptions): Promise<void> {
     process.exit(1);
   }
 
-  const matched = opts.grep
-    ? grepProbes(probesFor(opts.category, source), opts.grep)
-    : probesFor(opts.category, source);
+  let matched = probesFor(opts.category, source);
+  if (opts.grep) matched = grepProbes(matched, opts.grep);
+  if (opts.only) matched = onlyProbes(matched, opts.only);
   const probes = matched.slice(0, opts.max);
   if (!probes.length) {
-    console.error(opts.grep ? `no probes match --grep "${opts.grep}".` : "no probes selected.");
+    const why = opts.only ? `--only "${opts.only}"` : opts.grep ? `--grep "${opts.grep}"` : undefined;
+    console.error(why ? `no probes match ${why}.` : "no probes selected.");
     process.exit(1);
   }
   const gap = opts.gap ?? DEFAULT_GAP_MS;

@@ -8,6 +8,7 @@
  * Kill switch: create a file named STOP_MIRA in the cwd to block sends.
  */
 import { existsSync } from "node:fs";
+import { type Expect, evaluate, type Verdict } from "../assert.js";
 import { type CollectOptions, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
 import { appendRun } from "../log.js";
@@ -28,6 +29,8 @@ export interface SendOptions {
   timeout?: number;
   /** Skip appending the result to the run log. */
   noLog?: boolean;
+  /** Inline assertions to grade the reply against — exits non-zero on failure. */
+  expect?: Expect;
 }
 
 export async function send(rawMessage: string, opts: SendOptions = {}): Promise<void> {
@@ -53,6 +56,7 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
 
   const peer = tgEnv.miraPeer;
   const client = await connect(session);
+  let verdict: Verdict | undefined;
   try {
     const result = await withProgress(`@${peer}`, () => sendAndCollect(client, peer, message, collect), opts.quiet);
     if (!opts.noLog) await appendRun(result);
@@ -66,7 +70,16 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
       );
     }
     console.log(JSON.stringify(result, null, 2));
+    if (opts.expect) verdict = evaluate(opts.expect, result);
   } finally {
     await client.disconnect();
+  }
+  if (verdict) {
+    if (!opts.quiet) {
+      note(verdict.ok ? c.green("✓ assertions passed") : c.red("✗ assertions failed"));
+      if (!verdict.ok)
+        for (const ch of verdict.checks.filter((x) => !x.ok)) note(c.dim(`  ✗ ${ch.name}: ${ch.detail}`));
+    }
+    if (!verdict.ok) process.exit(1);
   }
 }

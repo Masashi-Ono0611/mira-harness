@@ -19,3 +19,6 @@ tmp-*.ts
 
 *.log
 .DS_Store
+
+# generated on demand by `mira-harness schema`
+catalog.schema.json

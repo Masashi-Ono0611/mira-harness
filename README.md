@@ -100,8 +100,8 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 |---|---|
 | `login` | One-time interactive login → prints `TG_SESSION` |
 | `doctor` | Check `.env` / session / connectivity / @mira resolution (read-only) |
-| `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout --no-log` |
-| `loop` | Run the catalog paced; grades `expect` probes (exit 1 on failure). `--category --max --confirm --peer --gap --settle --timeout --list --catalog --grep --no-fail --quiet` |
+| `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout --no-log --expect-*` |
+| `loop` | Run the catalog paced; grades `expect` probes (exit 1 on failure). `--category --max --confirm --peer --gap --settle --timeout --list --catalog --grep --only --no-fail --quiet` |
 | `catalog` | List the catalog (no sends). `--category --catalog --json` |
 | `watch` | Live-tail @mira's messages (observe-only). `--peer` |
 | `report` | Distill the run log into Markdown. `--in --out --category` |
@@ -164,8 +164,10 @@ graded probe fails — so it drops straight into CI. Add `--no-fail` to report w
 
 `assert` re-grades a **saved** run log against the catalog's `expect` (offline, no @mira) — the
 fast loop for *developing* assertions (capture once, then tune `expect` and re-grade instantly),
-and a way to gate a committed run-log fixture in CI **without a Telegram session**. Run a subset
-of probes by id with `loop --grep <regex>`; emit a catalog JSON Schema for your editor with `schema`.
+and a way to gate a committed run-log fixture in CI **without a Telegram session**. For a one-off
+check, `send` takes inline assertions: `send "What can you do?" --expect-min-links 1 --expect-max-ms 60000`
+(any `--expect-*` exits 1 on failure). Run a subset of probes by id with `loop --grep <regex>` or
+`loop --only <id1,id2>`; emit a catalog JSON Schema for your editor with `schema`.
 
 ### Drift detection
 
