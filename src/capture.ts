@@ -8,7 +8,7 @@
  * first message's `.message` string and dropped all of that. These extractors
  * pull it back so a probe captures Mira's full surface.
  */
-import { Api } from "telegram";
+import type { Api } from "telegram";
 
 /** An inline-keyboard button, flattened to the bits we care about. */
 export interface CapturedButton {
@@ -102,7 +102,7 @@ function extractButton(btn: Api.TypeKeyboardButton): CapturedButton | undefined 
 
 export function extractButtons(markup?: Api.TypeReplyMarkup): CapturedButton[] {
   // Only inline keyboards carry urls / web_app targets.
-  if (!markup || markup.className !== "ReplyInlineMarkup") return [];
+  if (markup?.className !== "ReplyInlineMarkup") return [];
   const out: CapturedButton[] = [];
   for (const row of markup.rows) {
     for (const btn of row.buttons) {
@@ -120,7 +120,7 @@ export function extractMedia(media?: Api.TypeMessageMedia): CapturedMedia | unde
       return { kind: "photo" };
     case "MessageMediaDocument": {
       const doc = (media as Api.MessageMediaDocument).document;
-      if (!doc || doc.className !== "Document") return { kind: "document" };
+      if (doc?.className !== "Document") return { kind: "document" };
       const mime = doc.mimeType ?? "";
       const nameAttr = doc.attributes.find((a) => a.className === "DocumentAttributeFilename") as
         | Api.DocumentAttributeFilename

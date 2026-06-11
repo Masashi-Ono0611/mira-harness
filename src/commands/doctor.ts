@@ -5,9 +5,10 @@
  *
  * Read-only — it never sends a message. Exit 0 if all checks pass, 1 otherwise.
  */
-import { tgEnv } from "../env.js";
+
 import { connect, resolvePeer } from "../client.js";
-import { c, note, mascot } from "../ui.js";
+import { tgEnv } from "../env.js";
+import { c, mascot, note } from "../ui.js";
 
 export async function doctor(): Promise<void> {
   const pass = (m: string): void => note(`${c.green("✔")} ${m}`);

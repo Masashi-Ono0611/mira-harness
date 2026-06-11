@@ -9,8 +9,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ProbeResult } from "../capture.js";
-import { RUNS_FILE } from "../log.js";
 import { CATEGORIES } from "../catalog.js";
+import { RUNS_FILE } from "../log.js";
 
 export type RunRecord = ProbeResult & { probeId?: string; category?: string; hypothesis?: string };
 
@@ -70,9 +70,7 @@ function gist(r: RunRecord): string {
 }
 
 function table(rows: RunRecord[]): string {
-  const head =
-    "| Probe | Sent | Reply (gist) | Signals | First reply | Settled |\n" +
-    "|---|---|---|---|---|---|";
+  const head = "| Probe | Sent | Reply (gist) | Signals | First reply | Settled |\n" + "|---|---|---|---|---|---|";
   const body = rows
     .map((r) => {
       const id = r.probeId ?? "—";

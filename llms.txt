@@ -10,11 +10,11 @@
 so the only programmatic path is a userbot (a real user account over MTProto / GramJS).
 
 ## Setup
-- `npm install`, then `cp .env.example .env`.
+- `bun install` (development uses [bun](https://bun.sh); the published package runs on plain Node), then `cp .env.example .env`.
 - `.env`: `TG_API_ID`, `TG_API_HASH`, `TG_SESSION`, `MIRA_PEER=mira` (optional `TG_EXPERIMENT_CHAT`).
 - `TG_SESSION` = full account access. `.env` only, never commit, never log.
-- Mint the session once: `npm run login` (interactive) → paste `TG_SESSION=...` into `.env`.
-- Run via `npm run dev -- <args>`, or `npm run build` then `npx mira-harness <args>`.
+- Mint the session once: `bun run login` (interactive) → paste `TG_SESSION=...` into `.env`.
+- Run via `bun run dev -- <args>`, or `bun run build` then `npx mira-harness <args>`.
 
 ## CLI commands
 - `doctor` — env / session / connectivity / @mira resolution check (read-only). Run this first.

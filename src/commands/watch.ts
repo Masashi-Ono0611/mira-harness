@@ -7,10 +7,11 @@
  * Prints each new/edited message from @mira with its buttons/links/media as it
  * arrives — handy while you poke at @mira by hand in Telegram.
  */
-import { tgEnv } from "../env.js";
-import { connect, subscribe } from "../client.js";
-import { c, note } from "../ui.js";
+
 import type { CapturedMessage } from "../capture.js";
+import { connect, subscribe } from "../client.js";
+import { tgEnv } from "../env.js";
+import { c, note } from "../ui.js";
 
 export interface WatchOptions {
   peer?: string;

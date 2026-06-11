@@ -27,13 +27,14 @@ is a **userbot** — driving a real Telegram *user account* via MTProto (GramJS)
 ## Install
 
 Published on [npm](https://www.npmjs.com/package/mira-harness) — run the CLI / MCP via
-`npx mira-harness <command>` (or `npm i -g mira-harness`). To develop or use
-`npm run login`, clone instead:
+`npx mira-harness <command>` (or `npm i -g mira-harness`) — runs under Node, no bun
+needed. To develop (or use `bun run login`), clone instead; development uses
+[bun](https://bun.sh):
 
 ```bash
 git clone https://github.com/Masashi-Ono0611/mira-harness.git
 cd mira-harness
-npm install
+bun install
 ```
 
 ## Configuration
@@ -48,35 +49,35 @@ cp .env.example .env
 Mint the session once (interactive — enter the code Telegram sends you):
 
 ```bash
-npm run login          # prints TG_SESSION=... -> paste it into .env
+bun run login          # prints TG_SESSION=... -> paste it into .env
 ```
 
 (Optional) Mira Pro credits: DM `/promo MIRAFAM26` to @mira.
 
 ## Usage
 
-Via `npm run dev -- <args>`, or build once (`npm run build`) and use the `mira-harness` bin / `npx`.
+Via `bun run dev -- <args>`, or build once (`bun run build`) and use the `mira-harness` bin / `npx`.
 
 ```bash
 # one probe — full settled reply as JSON (message via arg or stdin)
-npm run dev -- send "STON_USDT_10"
-echo "STON_USDT_10" | npm run dev -- send
+bun run dev -- send "STON_USDT_10"
+echo "STON_USDT_10" | bun run dev -- send
 
 # self-driving catalog — paced, STOP_MIRA kill switch, observe-only
-npm run dev -- loop --category core
-npm run dev -- loop --category generation --confirm   # also taps a safe ✅ (spends Pro credits)
+bun run dev -- loop --category core
+bun run dev -- loop --category generation --confirm   # also taps a safe ✅ (spends Pro credits)
 
 # read the results back
-npm run dev -- report --out report.md                 # JSONL run log → Markdown
-npm run dev -- stats                                  # totals · latency records · 🏆 fastest · sparkline
+bun run dev -- report --out report.md                 # JSONL run log → Markdown
+bun run dev -- stats                                  # totals · latency records · 🏆 fastest · sparkline
 
 # no-send commands: preflight, dry-run, live-tail
-npm run dev -- doctor
-npm run dev -- loop --list
-npm run dev -- watch                                  # watch @mira while you poke it by hand
+bun run dev -- doctor
+bun run dev -- loop --list
+bun run dev -- watch                                  # watch @mira while you poke it by hand
 ```
 
-Once built (`npm run build`) or installed (`npm i -g mira-harness`), the same commands run as
+Once built (`bun run build`) or installed (`npm i -g mira-harness`), the same commands run as
 `mira-harness <command>` — or straight from npm with no clone: `npx mira-harness doctor`.
 Every command and flag is in [Commands](#commands); custom catalogs in [Custom catalog](#custom-catalog).
 
@@ -165,7 +166,7 @@ Claude/agent can probe @mira directly via tools.
 | `mira_report` | `inFile?`, `category?` | run log → Markdown |
 | `mira_doctor` | — | env / session / connectivity check |
 
-Register it (local build — run `npm run build` first):
+Register it (local build — run `bun run build` first):
 
 ```json
 {
@@ -210,10 +211,15 @@ directory. The bin ships in the published `mira-harness` package, so:
 
 ## Develop
 
+Development uses [bun](https://bun.sh) (≥ 1.3); the published package stays Node-compatible.
+
 ```bash
-npm run typecheck   # tsc --noEmit
-npm test            # unit tests for the pure extractors (no network)
-npm run build       # tsup -> dist/cli.js
+bun install
+bun run dev -- doctor   # run the CLI straight from source
+bun run lint            # biome check (lint + format) · `bun run format` to auto-fix
+bun run typecheck       # tsc --noEmit
+bun test                # bun:test unit tests (no network)
+bun run build           # bun build -> dist (+ tsc declarations)
 ```
 
 ## License

@@ -7,11 +7,12 @@
  * .env and every later run reconnects headlessly. The session string grants FULL
  * access to your account — keep it secret, never commit it.
  */
+
+import { createInterface } from "node:readline/promises";
 import { TelegramClient } from "telegram";
-import { StringSession } from "telegram/sessions/index.js";
 import { Logger } from "telegram/extensions/index.js";
 import { LogLevel } from "telegram/extensions/Logger.js";
-import { createInterface } from "node:readline/promises";
+import { StringSession } from "telegram/sessions/index.js";
 import { tgEnv } from "../env.js";
 
 export async function login(): Promise<void> {
