@@ -8,12 +8,14 @@
  */
 import { Command } from "commander";
 import { CATEGORIES } from "./catalog.js";
+import { assertLog } from "./commands/assert.js";
 import { listCatalog } from "./commands/catalog.js";
 import { diff } from "./commands/diff.js";
 import { doctor } from "./commands/doctor.js";
 import { login } from "./commands/login.js";
 import { loop } from "./commands/loop.js";
 import { report } from "./commands/report.js";
+import { schema } from "./commands/schema.js";
 import { send } from "./commands/send.js";
 import { stats } from "./commands/stats.js";
 import { watch } from "./commands/watch.js";
@@ -91,6 +93,7 @@ program
   .option("--timeout <ms>", "give up if no reply by this many ms")
   .option("--list", "list the probes that would run, then exit (no sends)", false)
   .option("--catalog <file>", "custom catalog JSON file (instead of the built-in catalog)")
+  .option("--grep <pattern>", "run only probes whose id matches this regex (case-insensitive)")
   .option("--no-fail", "report failed assertions but still exit 0 (default: exit 1 on failure)")
   .option("-q, --quiet", "suppress progress spinners", false)
   .action(
@@ -104,6 +107,7 @@ program
       timeout?: string;
       list: boolean;
       catalog?: string;
+      grep?: string;
       fail: boolean;
       quiet: boolean;
     }) => {
@@ -117,6 +121,7 @@ program
         timeout: ms("timeout", opts.timeout),
         list: opts.list,
         catalog: opts.catalog,
+        grep: opts.grep,
         noFail: opts.fail === false,
         quiet: opts.quiet,
       });
@@ -172,6 +177,26 @@ program
     diff({ baseline, current, json: opts.json, noFail: !opts.fail });
   });
 
+program
+  .command("assert")
+  .description("Re-grade a saved run log against a catalog's `expect` (offline; exit 1 on failure)")
+  .option("--in <file>", "input JSONL (default: the run log)")
+  .option("--catalog <file>", "catalog with expectations (default: the built-in catalog)")
+  .option("-c, --category <category>", "only include probes from this category")
+  .option("--json", "output the results as JSON", false)
+  .option("--no-fail", "report failures but still exit 0")
+  .action((opts: { in?: string; catalog?: string; category?: string; json: boolean; fail: boolean }) => {
+    assertLog({ in: opts.in, catalog: opts.catalog, category: opts.category, json: opts.json, noFail: !opts.fail });
+  });
+
+program
+  .command("schema")
+  .description("Print the JSON Schema for a custom catalog file (editor autocomplete / validation)")
+  .option("--out <file>", "write to a file instead of stdout")
+  .action((opts: { out?: string }) => {
+    schema({ out: opts.out });
+  });
+
 program.addHelpText(
   "after",
   `
@@ -189,6 +214,9 @@ Examples:
   $ mira-harness report --category core --out report.md
   $ mira-harness stats
   $ mira-harness diff baseline.jsonl
+  $ mira-harness loop --grep core-json
+  $ mira-harness assert
+  $ mira-harness schema > catalog.schema.json
 `,
 );
 

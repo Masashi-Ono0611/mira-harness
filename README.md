@@ -101,12 +101,14 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 | `login` | One-time interactive login → prints `TG_SESSION` |
 | `doctor` | Check `.env` / session / connectivity / @mira resolution (read-only) |
 | `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout --no-log` |
-| `loop` | Run the catalog paced; grades `expect` probes (exit 1 on failure). `--category --max --confirm --peer --gap --settle --timeout --list --catalog --no-fail --quiet` |
+| `loop` | Run the catalog paced; grades `expect` probes (exit 1 on failure). `--category --max --confirm --peer --gap --settle --timeout --list --catalog --grep --no-fail --quiet` |
 | `catalog` | List the catalog (no sends). `--category --catalog --json` |
 | `watch` | Live-tail @mira's messages (observe-only). `--peer` |
 | `report` | Distill the run log into Markdown. `--in --out --category` |
 | `stats` | At-a-glance dashboard: totals, latency records, sparkline. `--in --category --json` |
 | `diff` | Compare two run logs for @mira behavioral drift (exit 1 on a regression). `--json --no-fail` |
+| `assert` | Re-grade a saved run log against a catalog's `expect`, offline (exit 1 on failure). `--in --catalog --category --json --no-fail` |
+| `schema` | Print the JSON Schema for a custom catalog file (editor autocomplete / validation). `--out` |
 
 Run `mira-harness --help` (or `<command> --help`) for full options.
 
@@ -159,6 +161,11 @@ Give a probe an optional `expect` block and `loop` grades it ✓/✗. The checks
 
 Probes without `expect` stay observe-only (informational). `loop` **exits non-zero** if any
 graded probe fails — so it drops straight into CI. Add `--no-fail` to report without failing.
+
+`assert` re-grades a **saved** run log against the catalog's `expect` (offline, no @mira) — the
+fast loop for *developing* assertions (capture once, then tune `expect` and re-grade instantly),
+and a way to gate a committed run-log fixture in CI **without a Telegram session**. Run a subset
+of probes by id with `loop --grep <regex>`; emit a catalog JSON Schema for your editor with `schema`.
 
 ### Drift detection
 
