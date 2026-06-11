@@ -41,7 +41,7 @@ export interface Probe {
 
 export const CATEGORIES: ProbeCategory[] = ["core", "skills", "generation", "wallet"];
 
-const ProbeSchema = z.object({
+export const ProbeSchema = z.object({
   id: z.string().min(1),
   category: z.string().default("custom"),
   hypothesis: z.string().default(""),
@@ -51,6 +51,9 @@ const ProbeSchema = z.object({
   note: z.string().optional(),
   expect: ExpectSchema.optional(),
 });
+
+/** A whole catalog file = an array of probes. */
+export const CatalogSchema = z.array(ProbeSchema);
 
 /**
  * Load a custom probe catalog from a JSON file (an array of probe objects).
@@ -279,4 +282,19 @@ export const CATALOG: Probe[] = [
 export function probesFor(category?: string, source: Probe[] = CATALOG): Probe[] {
   if (!category) return source;
   return source.filter((p) => p.category === category);
+}
+
+/** Keep probes whose `id` matches the pattern (regex, case-insensitive; falls
+ *  back to substring on an invalid regex). Used by `loop --grep` to run a subset. */
+export function grepProbes(probes: Probe[], pattern: string): Probe[] {
+  let compiled: RegExp | undefined;
+  try {
+    compiled = new RegExp(pattern, "i");
+  } catch {
+    compiled = undefined;
+  }
+  const rx = compiled;
+  if (rx) return probes.filter((p) => rx.test(p.id));
+  const needle = pattern.toLowerCase();
+  return probes.filter((p) => p.id.toLowerCase().includes(needle));
 }

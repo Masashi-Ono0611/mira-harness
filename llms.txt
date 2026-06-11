@@ -19,12 +19,14 @@ so the only programmatic path is a userbot (a real user account over MTProto / G
 ## CLI commands
 - `doctor` — env / session / connectivity / @mira resolution check (read-only). Run this first.
 - `send [message...]` — one probe → full reply as JSON. Message via arg or stdin. Flags: `--settle <ms> --timeout <ms> --quiet --no-log`.
-- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --no-fail --quiet`. Observe-only unless `--confirm`. Grades probes that declare `expect` (PASS/FAIL) and **exits non-zero** if any graded probe fails (`--no-fail` to report without failing) — drops straight into CI.
+- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --grep <regex> --no-fail --quiet`. Observe-only unless `--confirm`. Grades probes that declare `expect` (PASS/FAIL) and **exits non-zero** if any graded probe fails (`--no-fail` to report without failing) — drops straight into CI. `--grep <regex>` runs only probes whose id matches.
 - `catalog` — list the catalog, no network. Flags: `--category --catalog <file.json> --json`.
 - `watch` — live-tail @mira's messages, observe-only. Flag: `--peer`.
 - `report` — distill the JSONL run log into Markdown. Flags: `--in <file> --out <file> --category`.
 - `stats` — at-a-glance run-log dashboard: totals, first-reply latency records (fastest / median / p95 / slowest), an ASCII sparkline, and a per-category breakdown. Flags: `--in <file> --category --json`.
 - `diff <baseline> [current]` — compare two run logs for @mira behavioral drift (matches probes by id; structural, not exact-text). Regressions (assertion ✓→✗, new timeout, >2x latency) **exit non-zero**; surface changes / improvements are reported. `current` defaults to the run log. Flags: `--json --no-fail`.
+- `assert` — re-grade a SAVED run log against a catalog's `expect`, offline (no network). The fast loop for developing assertions, and CI-able **without a Telegram session** (grade a committed run-log fixture). **Exits non-zero** on failure. Flags: `--in <file> --catalog <file.json> --category --json --no-fail`.
+- `schema` — print the JSON Schema for a custom catalog file (an array of probes), derived from the loader's zod schema. Wire into an editor for autocomplete/validation. Flag: `--out <file>`.
 - Help: `mira-harness --help` or `<command> --help`.
 
 ## MCP server (bin: mira-harness-mcp, entry dist/mcp.js)

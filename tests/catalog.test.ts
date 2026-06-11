@@ -6,7 +6,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CATALOG, loadCatalog, probesFor } from "../src/catalog.js";
+import { z } from "zod";
+import { CATALOG, CatalogSchema, grepProbes, loadCatalog, probesFor } from "../src/catalog.js";
 
 const dir = mkdtempSync(join(tmpdir(), "mh-"));
 
@@ -54,4 +55,19 @@ test("empty array -> error", () => {
 test("built-in catalog sanity (expanded set)", () => {
   assert.ok(CATALOG.length >= 25, `expected >=25 built-in probes, got ${CATALOG.length}`);
   assert.ok(probesFor("core").length >= 5);
+});
+
+test("grepProbes: regex on id, case-insensitive, substring fallback on bad regex", () => {
+  assert.equal(grepProbes(CATALOG, "^core-json$").length, 1); // a unique built-in id
+  assert.equal(grepProbes(CATALOG, "CORE-JSON").length, 1); // case-insensitive
+  assert.ok(grepProbes(CATALOG, "core-").length >= 5); // prefix matches the core-* probes
+  assert.equal(grepProbes(CATALOG, "no-such-probe").length, 0);
+  assert.ok(Array.isArray(grepProbes(CATALOG, "core-json("))); // invalid regex -> no throw, falls back
+});
+
+test("CatalogSchema -> JSON Schema includes probe fields (for `schema` command)", () => {
+  const s = JSON.stringify(z.toJSONSchema(CatalogSchema));
+  assert.match(s, /"type"\s*:\s*"array"/);
+  assert.match(s, /"id"/);
+  assert.match(s, /"expect"/);
 });

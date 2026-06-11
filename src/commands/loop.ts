@@ -17,7 +17,7 @@
  */
 import { existsSync } from "node:fs";
 import { evaluate, type Verdict } from "../assert.js";
-import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "../catalog.js";
+import { CATALOG, CATEGORIES, grepProbes, loadCatalog, type Probe, probesFor } from "../catalog.js";
 import { type CollectOptions, clickAndCollect, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
 import { appendRun } from "../log.js";
@@ -87,6 +87,8 @@ export interface LoopOptions {
   catalog?: string;
   /** Do not exit non-zero even if a graded probe fails its assertions. */
   noFail?: boolean;
+  /** Run only probes whose id matches this regex (case-insensitive). */
+  grep?: string;
 }
 
 function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
@@ -104,7 +106,7 @@ export async function loop(opts: LoopOptions): Promise<void> {
   }
 
   if (opts.list) {
-    listCatalog({ category: opts.category, max: opts.max, catalog: opts.catalog }); // honor --max + custom catalog
+    listCatalog({ category: opts.category, max: opts.max, catalog: opts.catalog, grep: opts.grep }); // honor --max/--grep + custom catalog
     return;
   }
 
@@ -128,9 +130,12 @@ export async function loop(opts: LoopOptions): Promise<void> {
     process.exit(1);
   }
 
-  const probes = probesFor(opts.category, source).slice(0, opts.max);
+  const matched = opts.grep
+    ? grepProbes(probesFor(opts.category, source), opts.grep)
+    : probesFor(opts.category, source);
+  const probes = matched.slice(0, opts.max);
   if (!probes.length) {
-    console.error("no probes selected.");
+    console.error(opts.grep ? `no probes match --grep "${opts.grep}".` : "no probes selected.");
     process.exit(1);
   }
   const gap = opts.gap ?? DEFAULT_GAP_MS;
