@@ -1,7 +1,7 @@
 /**
  * List the experiment catalog without sending anything (also powers `loop --list`).
  */
-import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "../catalog.js";
+import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "../catalog.js";
 import { c, note } from "../ui.js";
 
 export interface CatalogOptions {
@@ -43,9 +43,7 @@ export function listCatalog(opts: CatalogOptions = {}): void {
 
   note(c.bold(`${probes.length} probe(s)${opts.category ? ` [${opts.category}]` : ""}`));
   for (const p of probes) {
-    const tags = [p.slow ? c.yellow("slow") : "", p.confirm ? c.magenta("confirm") : ""]
-      .filter(Boolean)
-      .join(" ");
+    const tags = [p.slow ? c.yellow("slow") : "", p.confirm ? c.magenta("confirm") : ""].filter(Boolean).join(" ");
     note(`  ${c.cyan(p.id.padEnd(16))} ${c.dim(p.category.padEnd(11))} ${p.hypothesis} ${tags}`);
   }
 }

@@ -25,12 +25,16 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsx src/cli.ts",
-    "login": "tsx src/cli.ts login",
+    "dev": "bun src/cli.ts",
+    "login": "bun src/cli.ts login",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/capture.test.ts && tsx tests/catalog.test.ts && tsx tests/safety.test.ts && tsx tests/report.test.ts && tsx tests/stats.test.ts",
-    "prepublishOnly": "npm run build"
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "bun test",
+    "clean": "rm -rf dist",
+    "build": "bun run clean && bun build src/cli.ts src/mcp.ts src/index.ts --target=node --format=esm --outdir=dist --packages=external && bun run build:types",
+    "build:types": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build"
   },
   "keywords": [
     "telegram",
@@ -60,9 +64,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "@types/bun": "^1.3.14",
     "@types/node": "^22",
-    "tsup": "^8",
-    "tsx": "^4",
     "typescript": "^5"
   }
 }

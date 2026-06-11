@@ -8,16 +8,16 @@
  */
 import { Command } from "commander";
 import { CATEGORIES } from "./catalog.js";
-import { getVersion } from "./version.js";
-import { banner } from "./ui.js";
+import { listCatalog } from "./commands/catalog.js";
+import { doctor } from "./commands/doctor.js";
 import { login } from "./commands/login.js";
-import { send } from "./commands/send.js";
 import { loop } from "./commands/loop.js";
 import { report } from "./commands/report.js";
+import { send } from "./commands/send.js";
 import { stats } from "./commands/stats.js";
-import { doctor } from "./commands/doctor.js";
-import { listCatalog } from "./commands/catalog.js";
 import { watch } from "./commands/watch.js";
+import { banner } from "./ui.js";
+import { getVersion } from "./version.js";
 
 /** Parse a non-negative millisecond option; reject NaN/Infinity/negative (would
  *  collapse setTimeout delays and silently remove the safety gap). */
@@ -54,10 +54,7 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
   banner(version, { quiet: Boolean((actionCommand.opts() as { quiet?: boolean }).quiet) });
 });
 
-program
-  .command("login")
-  .description("One-time interactive login -> prints TG_SESSION for .env")
-  .action(login);
+program.command("login").description("One-time interactive login -> prints TG_SESSION for .env").action(login);
 
 program
   .command("doctor")

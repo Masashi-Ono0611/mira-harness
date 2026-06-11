@@ -9,36 +9,34 @@
  *
  * The CLI (bin: `mira-harness`) and the MCP server are thin frontends over this.
  */
-export {
-  connect,
-  sendAndCollect,
-  clickAndCollect,
-  allowedPeers,
-  assertAllowed,
-  type CollectOptions,
-} from "./client.js";
 
 export {
-  extractMessage,
-  extractButtons,
-  extractLinks,
-  extractMedia,
-  type CapturedMessage,
   type CapturedButton,
   type CapturedLink,
   type CapturedMedia,
+  type CapturedMessage,
+  extractButtons,
+  extractLinks,
+  extractMedia,
+  extractMessage,
   type ProbeResult,
 } from "./capture.js";
-
 export {
   CATALOG,
   CATEGORIES,
-  probesFor,
   loadCatalog,
   type Probe,
   type ProbeCategory,
+  probesFor,
 } from "./catalog.js";
-
-export { appendRun, RUNS_FILE, type RunMeta } from "./log.js";
-export { tgEnv } from "./env.js";
+export {
+  allowedPeers,
+  assertAllowed,
+  type CollectOptions,
+  clickAndCollect,
+  connect,
+  sendAndCollect,
+} from "./client.js";
 export { renderReport } from "./commands/report.js";
+export { tgEnv } from "./env.js";
+export { appendRun, RUNS_FILE, type RunMeta } from "./log.js";

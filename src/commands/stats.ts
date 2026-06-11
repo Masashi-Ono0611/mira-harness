@@ -10,8 +10,8 @@
  * a per-category breakdown, and an ASCII sparkline of first-reply times over time.
  */
 import { resolve } from "node:path";
-import { c, note } from "../ui.js";
 import { RUNS_FILE } from "../log.js";
+import { c, note } from "../ui.js";
 import { loadRunRecords, type RunRecord } from "./report.js";
 
 const SPARK = "▁▂▃▄▅▆▇█";
@@ -26,9 +26,7 @@ export function sparkline(values: number[]): string {
     if (v > max) max = v;
   }
   const range = max - min || 1;
-  return values
-    .map((v) => SPARK[Math.min(SPARK.length - 1, Math.floor(((v - min) / range) * SPARK.length))])
-    .join("");
+  return values.map((v) => SPARK[Math.min(SPARK.length - 1, Math.floor(((v - min) / range) * SPARK.length))]).join("");
 }
 
 /** Nearest-rank percentile of an ASCENDING-sorted array (0 for empty). */
@@ -143,7 +141,8 @@ export function stats(opts: StatsOptions = {}): void {
       `    🏆 fastest ${c.green(secs(lat.min))}   median ${c.cyan(secs(lat.median))}   ` +
         `p95 ${c.cyan(secs(lat.p95))}   slowest ${c.yellow(secs(lat.max))}`,
     );
-    if (series.length > 1) note(`    ${c.magenta(sparkline(series))}  ${c.dim(`(${series.length} replies, oldest→newest)`)}`);
+    if (series.length > 1)
+      note(`    ${c.magenta(sparkline(series))}  ${c.dim(`(${series.length} replies, oldest→newest)`)}`);
   } else {
     note(c.dim("  no first-reply times recorded yet."));
   }
@@ -151,6 +150,8 @@ export function stats(opts: StatsOptions = {}): void {
   note("");
   note(c.bold("  by category"));
   for (const [cat, v] of byCat) {
-    note(`    ${c.cyan(cat.padEnd(16))} ${String(v.total).padStart(3)} probes  ${c.dim(`${rate(v.replied, v.total)} replied`)}`);
+    note(
+      `    ${c.cyan(cat.padEnd(16))} ${String(v.total).padStart(3)} probes  ${c.dim(`${rate(v.replied, v.total)} replied`)}`,
+    );
   }
 }

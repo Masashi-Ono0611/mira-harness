@@ -8,8 +8,8 @@
  * Kill switch: create a file named STOP_MIRA in the cwd to block sends.
  */
 import { existsSync } from "node:fs";
+import { type CollectOptions, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
-import { connect, sendAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
 import { c, note, withProgress } from "../ui.js";
 
@@ -54,17 +54,15 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
   const peer = tgEnv.miraPeer;
   const client = await connect(session);
   try {
-    const result = await withProgress(
-      `@${peer}`,
-      () => sendAndCollect(client, peer, message, collect),
-      opts.quiet,
-    );
+    const result = await withProgress(`@${peer}`, () => sendAndCollect(client, peer, message, collect), opts.quiet);
     if (!opts.noLog) await appendRun(result);
     if (!opts.quiet) {
       note(
         result.timedOut
           ? c.yellow("no reply (timed out)")
-          : c.green(`${result.messages.length} message(s) · first reply ${((result.firstReplyMs ?? 0) / 1000).toFixed(1)}s`),
+          : c.green(
+              `${result.messages.length} message(s) · first reply ${((result.firstReplyMs ?? 0) / 1000).toFixed(1)}s`,
+            ),
       );
     }
     console.log(JSON.stringify(result, null, 2));

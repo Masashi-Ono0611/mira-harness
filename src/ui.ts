@@ -34,13 +34,7 @@ export function mascot(mood: Mood = "neutral"): string[] {
     sad: { top: "       ", eyes: "x   x", mouth: "_" },
   };
   const f = faces[mood];
-  return [
-    `     ${f.top}`,
-    "    .-------.",
-    `    | ${f.eyes} |`,
-    `    | ${center(f.mouth, 5)} |`,
-    "    '-------'",
-  ];
+  return [`     ${f.top}`, "    .-------.", `    | ${f.eyes} |`, `    | ${center(f.mouth, 5)} |`, "    '-------'"];
 }
 
 /** "MIRA" wordmark (figlet "Standard"). Backslashes are escaped (\\). */
@@ -105,11 +99,7 @@ const VERB_EVERY_MS = 3_500;
  * kept as dim context. Falls back to a plain run when `quiet` or when stderr
  * isn't a TTY (piped / CI output stays clean).
  */
-export async function withProgress<T>(
-  label: string,
-  fn: () => Promise<T>,
-  quiet = false,
-): Promise<T> {
+export async function withProgress<T>(label: string, fn: () => Promise<T>, quiet = false): Promise<T> {
   if (quiet || !process.stderr.isTTY) return fn();
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   const start = Date.now();
@@ -119,9 +109,7 @@ export async function withProgress<T>(
     const pool = elapsed >= SLOW_AFTER_MS ? VERBS_SLOW : VERBS;
     const verb = pool[Math.floor(elapsed / VERB_EVERY_MS) % pool.length];
     const s = (elapsed / 1000).toFixed(0);
-    process.stderr.write(
-      `\r${pc.cyan(frames[i++ % frames.length])} ${verb} ${pc.dim(`· ${label} · ${s}s`)}  `,
-    );
+    process.stderr.write(`\r${pc.cyan(frames[i++ % frames.length])} ${verb} ${pc.dim(`· ${label} · ${s}s`)}  `);
   }, 100);
   try {
     return await fn();

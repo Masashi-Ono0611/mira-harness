@@ -6,19 +6,19 @@
  * optional experiment chat). This is the guardrail against fat-fingering a
  * message to the wrong chat from your own account.
  */
-import { TelegramClient, Api } from "telegram";
-// Use explicit /index.js subpaths so the BUILT esm bin resolves them (Node ESM
-// can't do bare directory imports like "telegram/sessions").
-import { StringSession } from "telegram/sessions/index.js";
-import { NewMessage, Raw } from "telegram/events/index.js";
-import { Logger } from "telegram/extensions/index.js";
-import { LogLevel } from "telegram/extensions/Logger.js";
+import { Api, TelegramClient } from "telegram";
 // EditedMessage exists in events/index.d.ts but isn't re-exported by events/index.js
 // (GramJS packaging quirk), so import it from its submodule directly.
 import { EditedMessage } from "telegram/events/EditedMessage.js";
 import type { NewMessageEvent } from "telegram/events/index.js";
+import { NewMessage, Raw } from "telegram/events/index.js";
+import { Logger } from "telegram/extensions/index.js";
+import { LogLevel } from "telegram/extensions/Logger.js";
+// Use explicit /index.js subpaths so the BUILT esm bin resolves them (Node ESM
+// can't do bare directory imports like "telegram/sessions").
+import { StringSession } from "telegram/sessions/index.js";
+import { type CapturedMessage, extractMessage, type ProbeResult } from "./capture.js";
 import { tgEnv } from "./env.js";
-import { extractMessage, type CapturedMessage, type ProbeResult } from "./capture.js";
 
 export function allowedPeers(): string[] {
   const peers = [tgEnv.miraPeer];
@@ -29,9 +29,7 @@ export function allowedPeers(): string[] {
 /** Refuse to send to anyone outside the allowlist (own-account safety). */
 export function assertAllowed(peer: string): void {
   if (!allowedPeers().includes(peer)) {
-    throw new Error(
-      `peer "${peer}" not in allowlist [${allowedPeers().join(", ")}] — refusing to send`,
-    );
+    throw new Error(`peer "${peer}" not in allowlist [${allowedPeers().join(", ")}] — refusing to send`);
   }
 }
 

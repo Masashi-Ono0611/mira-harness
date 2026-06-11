@@ -15,11 +15,11 @@ import { existsSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { connect, sendAndCollect, resolvePeer, type CollectOptions } from "./client.js";
-import { appendRun } from "./log.js";
-import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "./catalog.js";
+import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "./catalog.js";
+import { type CollectOptions, connect, resolvePeer, sendAndCollect } from "./client.js";
 import { renderReport } from "./commands/report.js";
 import { tgEnv } from "./env.js";
+import { appendRun } from "./log.js";
 import { getVersion } from "./version.js";
 
 const STOP_FILE = "STOP_MIRA";
@@ -96,9 +96,15 @@ server.registerTool(
     description:
       "Send catalog probes to @mira at a human pace and capture replies. OBSERVE-ONLY: never presses buttons or spends credits (use the CLI `loop --confirm` for that).",
     inputSchema: {
-      category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
+      category: z
+        .string()
+        .optional()
+        .describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
       max: z.number().int().positive().max(50).optional().describe("max probes (default 6)"),
-      peer: z.string().optional().describe("'experiment'|'group' for TG_EXPERIMENT_CHAT, or a literal allowlisted peer"),
+      peer: z
+        .string()
+        .optional()
+        .describe("'experiment'|'group' for TG_EXPERIMENT_CHAT, or a literal allowlisted peer"),
       gapMs: z.number().int().nonnegative().optional().describe("delay between sends (default 15000)"),
       settleMs: z.number().int().positive().optional(),
       timeoutMs: z.number().int().positive().optional(),
@@ -160,7 +166,10 @@ server.registerTool(
     title: "List the experiment catalog",
     description: "List probes (id, category, hypothesis, flags) without sending anything.",
     inputSchema: {
-      category: z.string().optional().describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
+      category: z
+        .string()
+        .optional()
+        .describe(`one of: ${CATEGORIES.join(", ")} (or any category in a custom catalog)`),
       catalogFile: z.string().optional().describe("custom catalog JSON file (instead of the built-in catalog)"),
     },
   },

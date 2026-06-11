@@ -16,11 +16,11 @@
  *    probes flagged `confirm: true` (generation), never wallet/OAuth.
  */
 import { existsSync } from "node:fs";
+import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "../catalog.js";
+import { type CollectOptions, clickAndCollect, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
-import { connect, sendAndCollect, clickAndCollect, type CollectOptions } from "../client.js";
 import { appendRun } from "../log.js";
-import { CATALOG, CATEGORIES, loadCatalog, probesFor, type Probe } from "../catalog.js";
-import { c, note, withProgress, setTitle, clearTitle, notify } from "../ui.js";
+import { c, clearTitle, note, notify, setTitle, withProgress } from "../ui.js";
 import { listCatalog } from "./catalog.js";
 
 const STOP_FILE = "STOP_MIRA";
@@ -53,7 +53,10 @@ export function findConfirmButton(result: Awaited<ReturnType<typeof sendAndColle
 function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>): string {
   const btns = r.messages.reduce((n, m) => n + m.buttons.length, 0);
   const links = r.messages.reduce((n, m) => n + m.links.length, 0);
-  const media = r.messages.filter((m) => m.media).map((m) => m.media?.kind).join(",");
+  const media = r.messages
+    .filter((m) => m.media)
+    .map((m) => m.media?.kind)
+    .join(",");
   const head = r.timedOut ? c.yellow("TIMEOUT") : c.green(`${r.messages.length}msg`);
   const latency = r.firstReplyMs === null ? c.dim("—") : c.dim(`${(r.firstReplyMs / 1000).toFixed(1)}s`);
   const parts = [
