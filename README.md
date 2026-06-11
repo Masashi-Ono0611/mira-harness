@@ -106,6 +106,7 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 | `watch` | Live-tail @mira's messages (observe-only). `--peer` |
 | `report` | Distill the run log into Markdown. `--in --out --category` |
 | `stats` | At-a-glance dashboard: totals, latency records, sparkline. `--in --category --json` |
+| `diff` | Compare two run logs for @mira behavioral drift (exit 1 on a regression). `--json --no-fail` |
 
 Run `mira-harness --help` (or `<command> --help`) for full options.
 
@@ -158,6 +159,19 @@ Give a probe an optional `expect` block and `loop` grades it ✓/✗. The checks
 
 Probes without `expect` stay observe-only (informational). `loop` **exits non-zero** if any
 graded probe fails — so it drops straight into CI. Add `--no-fail` to report without failing.
+
+### Drift detection
+
+`diff` compares two run logs and flags how @mira's behavior **changed** (structural, not
+exact text). **Regressions** — an assertion that flipped ✓→✗, a probe that now times out, a
+>2× latency blow-up — exit non-zero; surface changes (buttons / links / media) and
+improvements are reported but pass. Snapshot a baseline, re-run later, diff:
+
+```bash
+MIRA_RUNS_FILE=baseline.jsonl mira-harness loop --category core   # snapshot a baseline
+mira-harness loop --category core                                # a later run -> mira-runs.jsonl
+mira-harness diff baseline.jsonl                                 # vs the current run log
+```
 
 ## Use as a library
 

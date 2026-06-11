@@ -9,6 +9,7 @@
 import { Command } from "commander";
 import { CATEGORIES } from "./catalog.js";
 import { listCatalog } from "./commands/catalog.js";
+import { diff } from "./commands/diff.js";
 import { doctor } from "./commands/doctor.js";
 import { login } from "./commands/login.js";
 import { loop } from "./commands/loop.js";
@@ -160,6 +161,17 @@ program
     stats({ in: opts.in, category: opts.category, json: opts.json });
   });
 
+program
+  .command("diff")
+  .description("Compare two run logs for @mira behavioral drift (exit 1 on a regression)")
+  .argument("<baseline>", "baseline run log (JSONL)")
+  .argument("[current]", "current run log (JSONL); defaults to the run log")
+  .option("--json", "output the drift as JSON", false)
+  .option("--no-fail", "report regressions but still exit 0")
+  .action((baseline: string, current: string | undefined, opts: { json: boolean; fail: boolean }) => {
+    diff({ baseline, current, json: opts.json, noFail: opts.fail === false });
+  });
+
 program.addHelpText(
   "after",
   `
@@ -176,6 +188,7 @@ Examples:
   $ mira-harness watch
   $ mira-harness report --category core --out report.md
   $ mira-harness stats
+  $ mira-harness diff baseline.jsonl
 `,
 );
 
