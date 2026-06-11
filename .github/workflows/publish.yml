@@ -47,7 +47,10 @@ jobs:
       - run: bun run build
       - run: bun run check:publish
       - run: node dist/cli.js --version # Node-compat smoke (consumers run on Node)
-      - run: npm publish # OIDC trusted publishing — no token; provenance is automatic
+      # OIDC trusted publishing (no token). Provenance is DISABLED: its Sigstore
+      # transparency-log step intermittently 409s on an internal retry and stalls
+      # the publish (hit on v0.2.2). Tokenless OIDC auth is unaffected.
+      - run: NPM_CONFIG_PROVENANCE=false npm publish
       - name: Create GitHub Release
         run: gh release create "${GITHUB_REF_NAME}" --verify-tag --generate-notes --latest
         env:
