@@ -41,7 +41,7 @@ test("buttons: Mini App Launch (web_app/startapp) + url + callback", () => {
           {
             className: "KeyboardButtonWebView",
             text: "Launch",
-            url: "https://t.me/tribemind_bot?startapp=STON_USDT_10",
+            url: "https://t.me/gram_bot?startapp=GRAM_10",
           },
           { className: "KeyboardButtonUrl", text: "Docs", url: "https://wiki.mira.tg" },
         ],
@@ -51,7 +51,7 @@ test("buttons: Mini App Launch (web_app/startapp) + url + callback", () => {
   };
   const buttons = extractButtons(markup as unknown as Api.TypeReplyMarkup);
   assert.equal(buttons.length, 3);
-  assert.equal(buttons[0]!.webAppUrl, "https://t.me/tribemind_bot?startapp=STON_USDT_10");
+  assert.equal(buttons[0]!.webAppUrl, "https://t.me/gram_bot?startapp=GRAM_10");
   assert.equal(buttons[0]!.url, undefined);
   assert.equal(buttons[1]!.url, "https://wiki.mira.tg");
   assert.equal(buttons[2]!.callbackData, Buffer.from("yes").toString("base64"));

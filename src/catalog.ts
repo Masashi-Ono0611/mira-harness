@@ -81,7 +81,7 @@ export const CATALOG: Probe[] = [
     id: "core-mem-set",
     category: "core",
     hypothesis: "Mira has server-side memory — seed a fact to recall in core-mem-get.",
-    send: "Please remember this for later: my favorite TON token is TRIBEMIND.",
+    send: "Please remember this for later: my favorite TON token is GRAM.",
   },
   {
     id: "core-mem-get",
@@ -162,7 +162,7 @@ export const CATALOG: Probe[] = [
     id: "gen-music",
     category: "generation",
     hypothesis: "Music generation — does Mira return an audio document?",
-    send: "Create a short upbeat 15-second jingle for a TON DeFi app called TribeMind.",
+    send: "Create a short upbeat 15-second jingle for a TON DeFi app called GRAM.",
     slow: true,
     note: "expect media.kind=audio (document) if supported",
   },
@@ -242,7 +242,7 @@ export const CATALOG: Probe[] = [
     id: "gen-voice",
     category: "generation",
     hypothesis: "Text-to-speech — does Mira return a voice/audio message?",
-    send: "Read this aloud as a voice message: Welcome to TribeMind.",
+    send: "Read this aloud as a voice message: Welcome to GRAM.",
     slow: true,
   },
 
