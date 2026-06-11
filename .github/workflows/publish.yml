@@ -1,0 +1,50 @@
+name: Publish
+
+# Push a vX.Y.Z tag -> this builds, gates, publishes to npm via OIDC trusted
+# publishing (no token, no manual 2FA), and creates the GitHub Release. The npm
+# package must have this repo + `publish.yml` configured as a Trusted Publisher.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # OIDC token for npm trusted publishing
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.8"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+      - run: npm install -g npm@latest # OIDC trusted publishing needs npm >= 11.5.1
+      - run: bun install --frozen-lockfile
+      # Guard: never publish a version the tag doesn't match.
+      - name: Verify tag matches package.json version
+        run: |
+          PKG="$(node -p "require('./package.json').version")"
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "package=$PKG tag=$TAG"
+          [ "$PKG" = "$TAG" ] || { echo "::error::tag ${GITHUB_REF_NAME} != package.json ${PKG}"; exit 1; }
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build
+      - run: bun run check:publish
+      - run: node dist/cli.js --version # Node-compat smoke (consumers run on Node)
+      - run: npm publish # OIDC trusted publishing — no token; provenance is automatic
+      - name: Create GitHub Release
+        run: gh release create "${GITHUB_REF_NAME}" --verify-tag --generate-notes --latest
+        env:
+          GH_TOKEN: ${{ github.token }}

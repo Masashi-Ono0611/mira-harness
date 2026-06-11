@@ -8,11 +8,17 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import type { Verdict } from "../assert.js";
 import type { ProbeResult } from "../capture.js";
 import { CATEGORIES } from "../catalog.js";
 import { RUNS_FILE } from "../log.js";
 
-export type RunRecord = ProbeResult & { probeId?: string; category?: string; hypothesis?: string };
+export type RunRecord = ProbeResult & {
+  probeId?: string;
+  category?: string;
+  hypothesis?: string;
+  assert?: Verdict;
+};
 
 /**
  * Read the JSONL run log into records (malformed lines skipped). Throws ENOENT when
@@ -69,8 +75,20 @@ function gist(r: RunRecord): string {
   return truncate(first, 90);
 }
 
+/** Assertion verdict cell: ✅ pass, ❌ + failed check names, or — when not graded. */
+function verdictCell(r: RunRecord): string {
+  if (!r.assert) return "—";
+  if (r.assert.ok) return "✅";
+  const failed = r.assert.checks
+    .filter((ch) => !ch.ok)
+    .map((ch) => ch.name)
+    .join(", ");
+  return `❌ ${cell(failed)}`;
+}
+
 function table(rows: RunRecord[]): string {
-  const head = "| Probe | Sent | Reply (gist) | Signals | First reply | Settled |\n" + "|---|---|---|---|---|---|";
+  const head =
+    "| Probe | Test | Sent | Reply (gist) | Signals | First reply | Settled |\n" + "|---|---|---|---|---|---|---|";
   const body = rows
     .map((r) => {
       const id = r.probeId ?? "—";
@@ -78,7 +96,7 @@ function table(rows: RunRecord[]): string {
       const reply = r.timedOut ? "**TIMEOUT**" : cell(gist(r));
       const first = r.firstReplyMs === null ? "—" : `${(r.firstReplyMs / 1000).toFixed(1)}s`;
       const total = `${(r.totalMs / 1000).toFixed(1)}s`;
-      return `| \`${cell(id)}\` | ${sent} | ${reply} | ${cell(signals(r))} | ${first} | ${total} |`;
+      return `| \`${cell(id)}\` | ${verdictCell(r)} | ${sent} | ${reply} | ${cell(signals(r))} | ${first} | ${total} |`;
     })
     .join("\n");
   return `${head}\n${body}`;
@@ -90,6 +108,9 @@ export function buildReport(records: RunRecord[]): string {
   const avg = latencies.length ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
   const max = latencies.length ? Math.max(...latencies) : 0;
 
+  const graded = records.filter((r) => r.assert);
+  const passed = graded.filter((r) => r.assert?.ok);
+
   const out: string[] = [];
   out.push("# Mira(@mira) probe report (auto-generated)");
   out.push("");
@@ -97,6 +118,7 @@ export function buildReport(records: RunRecord[]): string {
   out.push("");
   out.push(
     `**${records.length}** probes · **${replied.length}** replied · **${records.length - replied.length}** timed out · ` +
+      (graded.length ? `**${passed.length}/${graded.length}** assertions passed · ` : "") +
       `first-reply avg **${(avg / 1000).toFixed(1)}s** / max **${(max / 1000).toFixed(1)}s**.`,
   );
   out.push("");

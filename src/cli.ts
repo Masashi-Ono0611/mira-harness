@@ -90,6 +90,7 @@ program
   .option("--timeout <ms>", "give up if no reply by this many ms")
   .option("--list", "list the probes that would run, then exit (no sends)", false)
   .option("--catalog <file>", "custom catalog JSON file (instead of the built-in catalog)")
+  .option("--no-fail", "report failed assertions but still exit 0 (default: exit 1 on failure)")
   .option("-q, --quiet", "suppress progress spinners", false)
   .action(
     async (opts: {
@@ -102,6 +103,7 @@ program
       timeout?: string;
       list: boolean;
       catalog?: string;
+      fail: boolean;
       quiet: boolean;
     }) => {
       await loop({
@@ -114,6 +116,7 @@ program
         timeout: ms("timeout", opts.timeout),
         list: opts.list,
         catalog: opts.catalog,
+        noFail: opts.fail === false,
         quiet: opts.quiet,
       });
     },

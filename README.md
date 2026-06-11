@@ -101,7 +101,7 @@ a "typing…" fallback for a slow bot — replies run 5–62s) and capture, per 
 | `login` | One-time interactive login → prints `TG_SESSION` |
 | `doctor` | Check `.env` / session / connectivity / @mira resolution (read-only) |
 | `send [message...]` | One probe → full reply as JSON (message via arg or stdin). `--quiet --settle --timeout --no-log` |
-| `loop` | Run the catalog paced. `--category --max --confirm --peer --gap --settle --timeout --list --catalog --quiet` |
+| `loop` | Run the catalog paced; grades `expect` probes (exit 1 on failure). `--category --max --confirm --peer --gap --settle --timeout --list --catalog --no-fail --quiet` |
 | `catalog` | List the catalog (no sends). `--category --catalog --json` |
 | `watch` | Live-tail @mira's messages (observe-only). `--peer` |
 | `report` | Distill the run log into Markdown. `--in --out --category` |
@@ -130,12 +130,34 @@ per-feature flags — `MIRA_NO_BANNER=1` (mascot + tip), `MIRA_NO_NOTIFY=1` (com
 The built-in catalog (27 probes: `core` / `skills` / `generation` / `wallet`) is just a
 default. Point `--catalog <file.json>` (CLI) or `catalogFile` (MCP) at your own probe set
 to probe any bot — each entry needs `id` + `send` (`category` / `hypothesis` / `slow` /
-`confirm` / `note` optional). See [`examples/catalog.sample.json`](examples/catalog.sample.json):
+`confirm` / `note` / `expect` optional). See [`examples/catalog.sample.json`](examples/catalog.sample.json):
 
 ```bash
 mira-harness loop --catalog ./examples/catalog.sample.json
 mira-harness catalog --catalog ./examples/catalog.sample.json --json
 ```
+
+### Assertions (PASS/FAIL)
+
+Give a probe an optional `expect` block and `loop` grades it ✓/✗. The checks are **structural**
+— @mira is an LLM (non-deterministic), so exact-text matches would flake:
+
+| Check | Means |
+|---|---|
+| `replies: true` | a reply arrived (no timeout) |
+| `textMatches: "<regex>"` | some message text matches (case-insensitive) |
+| `minButtons` / `minLinks` | at least N inline buttons / links across messages |
+| `hasWebApp: true` | a Mini App (`web_app` / startapp) "Launch" button is present |
+| `media: "photo"` | a message carries media of that kind (`photo`/`video`/`audio`/…) |
+| `maxFirstReplyMs` | first-reply latency within the bound |
+| `json: true` | the first message text parses as JSON |
+
+```json
+{ "id": "json-strict", "send": "Reply with ONLY {\"ok\":true}", "expect": { "json": true } }
+```
+
+Probes without `expect` stay observe-only (informational). `loop` **exits non-zero** if any
+graded probe fails — so it drops straight into CI. Add `--no-fail` to report without failing.
 
 ## Use as a library
 

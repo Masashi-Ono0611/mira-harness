@@ -19,7 +19,7 @@ so the only programmatic path is a userbot (a real user account over MTProto / G
 ## CLI commands
 - `doctor` — env / session / connectivity / @mira resolution check (read-only). Run this first.
 - `send [message...]` — one probe → full reply as JSON. Message via arg or stdin. Flags: `--settle <ms> --timeout <ms> --quiet --no-log`.
-- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --quiet`. Observe-only unless `--confirm`.
+- `loop` — run the catalog, paced. Flags: `--category <core|skills|generation|wallet> --max <n> --peer <experiment> --gap <ms> --settle <ms> --timeout <ms> --list --catalog <file.json> --no-fail --quiet`. Observe-only unless `--confirm`. Grades probes that declare `expect` (PASS/FAIL) and **exits non-zero** if any graded probe fails (`--no-fail` to report without failing) — drops straight into CI.
 - `catalog` — list the catalog, no network. Flags: `--category --catalog <file.json> --json`.
 - `watch` — live-tail @mira's messages, observe-only. Flag: `--peer`.
 - `report` — distill the JSONL run log into Markdown. Flags: `--in <file> --out <file> --category`.
