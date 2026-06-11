@@ -129,6 +129,9 @@ export function diff(opts: DiffOptions): void {
   const base = load(opts.baseline, "baseline");
   const cur = load(opts.current, "current");
   if (!base || !cur) process.exit(1);
+  // Warn on an empty log so "no drift" isn't a silent false negative.
+  if (!base.length) note(c.yellow(`baseline ${opts.baseline} has no records.`));
+  if (!cur.length) note(c.yellow(`current ${opts.current ?? "(run log)"} has no records.`));
 
   const items = diffRuns(base, cur);
   const regressions = items.filter((i) => i.kind === "regression");

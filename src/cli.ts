@@ -169,7 +169,7 @@ program
   .option("--json", "output the drift as JSON", false)
   .option("--no-fail", "report regressions but still exit 0")
   .action((baseline: string, current: string | undefined, opts: { json: boolean; fail: boolean }) => {
-    diff({ baseline, current, json: opts.json, noFail: opts.fail === false });
+    diff({ baseline, current, json: opts.json, noFail: !opts.fail });
   });
 
 program.addHelpText(
