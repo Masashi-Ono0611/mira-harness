@@ -45,6 +45,16 @@ function posInt(name: string, v: string): number {
   return n;
 }
 
+/** Parse a non-negative integer option (allows 0, e.g. --expect-min-links). */
+function nonNegInt(name: string, v: string): number {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0) {
+    console.error(`--${name} must be a non-negative integer (got "${v}")`);
+    process.exit(1);
+  }
+  return n;
+}
+
 /** Build an Expect from the `send --expect-*` flags (validated by the schema). */
 function buildSendExpect(o: {
   expectReply?: boolean;
@@ -60,8 +70,8 @@ function buildSendExpect(o: {
   if (o.expectReply) raw.replies = true;
   if (o.expectJson) raw.json = true;
   if (o.expectText !== undefined) raw.textMatches = o.expectText;
-  if (o.expectMinLinks !== undefined) raw.minLinks = posInt("expect-min-links", o.expectMinLinks);
-  if (o.expectMinButtons !== undefined) raw.minButtons = posInt("expect-min-buttons", o.expectMinButtons);
+  if (o.expectMinLinks !== undefined) raw.minLinks = nonNegInt("expect-min-links", o.expectMinLinks);
+  if (o.expectMinButtons !== undefined) raw.minButtons = nonNegInt("expect-min-buttons", o.expectMinButtons);
   if (o.expectWebapp) raw.hasWebApp = true;
   if (o.expectMedia !== undefined) raw.media = o.expectMedia;
   if (o.expectMaxMs !== undefined) raw.maxFirstReplyMs = ms("expect-max-ms", o.expectMaxMs);
@@ -108,7 +118,7 @@ program
   .option("--expect-min-links <n>", "assert at least N links across the reply")
   .option("--expect-min-buttons <n>", "assert at least N inline buttons")
   .option("--expect-webapp", "assert a web_app/startapp Launch button is present")
-  .option("--expect-media <kind>", "assert media of this kind (photo|video|audio|document|webpage)")
+  .option("--expect-media <kind>", "assert media of this kind (photo|video|audio|document|webpage|other)")
   .option("--expect-max-ms <ms>", "assert the first reply arrives within this many ms")
   .action(
     async (
