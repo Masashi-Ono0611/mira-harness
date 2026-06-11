@@ -1,6 +1,6 @@
 {
   "name": "mira-harness",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A CLI + MCP dev-tool for communicating with the @mira Telegram bot — capture its full reply (buttons/links/media) and run a self-driving experiment catalog.",
   "type": "module",
   "bin": {
