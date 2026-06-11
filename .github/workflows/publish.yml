@@ -8,6 +8,10 @@ on:
     tags:
       - "v*"
 
+# Run the JS actions (checkout/setup-*) on Node 24 — silences the Node 20 warning.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write # create the GitHub Release
   id-token: write # OIDC token for npm trusted publishing

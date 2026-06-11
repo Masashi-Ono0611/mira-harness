@@ -24,6 +24,7 @@ so the only programmatic path is a userbot (a real user account over MTProto / G
 - `watch` — live-tail @mira's messages, observe-only. Flag: `--peer`.
 - `report` — distill the JSONL run log into Markdown. Flags: `--in <file> --out <file> --category`.
 - `stats` — at-a-glance run-log dashboard: totals, first-reply latency records (fastest / median / p95 / slowest), an ASCII sparkline, and a per-category breakdown. Flags: `--in <file> --category --json`.
+- `diff <baseline> [current]` — compare two run logs for @mira behavioral drift (matches probes by id; structural, not exact-text). Regressions (assertion ✓→✗, new timeout, >2x latency) **exit non-zero**; surface changes / improvements are reported. `current` defaults to the run log. Flags: `--json --no-fail`.
 - Help: `mira-harness --help` or `<command> --help`.
 
 ## MCP server (bin: mira-harness-mcp, entry dist/mcp.js)
