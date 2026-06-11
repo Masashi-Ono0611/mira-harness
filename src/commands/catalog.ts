@@ -33,6 +33,7 @@ export function listCatalog(opts: CatalogOptions = {}): void {
           send: p.send,
           slow: Boolean(p.slow),
           confirm: Boolean(p.confirm),
+          expect: p.expect ?? null,
         })),
         null,
         2,

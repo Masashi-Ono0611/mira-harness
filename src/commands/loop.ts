@@ -16,6 +16,7 @@
  *    probes flagged `confirm: true` (generation), never wallet/OAuth.
  */
 import { existsSync } from "node:fs";
+import { evaluate, type Verdict } from "../assert.js";
 import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "../catalog.js";
 import { type CollectOptions, clickAndCollect, connect, sendAndCollect } from "../client.js";
 import { tgEnv } from "../env.js";
@@ -49,8 +50,8 @@ export function findConfirmButton(result: Awaited<ReturnType<typeof sendAndColle
   return undefined;
 }
 
-/** Colored one-line summary of a probe result. */
-function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>): string {
+/** Colored one-line summary of a probe result. A graded probe is prefixed ✓/✗. */
+function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>, verdict?: Verdict): string {
   const btns = r.messages.reduce((n, m) => n + m.buttons.length, 0);
   const links = r.messages.reduce((n, m) => n + m.links.length, 0);
   const media = r.messages
@@ -59,7 +60,9 @@ function summarize(id: string, r: Awaited<ReturnType<typeof sendAndCollect>>): s
     .join(",");
   const head = r.timedOut ? c.yellow("TIMEOUT") : c.green(`${r.messages.length}msg`);
   const latency = r.firstReplyMs === null ? c.dim("—") : c.dim(`${(r.firstReplyMs / 1000).toFixed(1)}s`);
+  const mark = verdict ? (verdict.ok ? c.green("✓") : c.red("✗")) : c.dim("·");
   const parts = [
+    mark,
     c.cyan(id),
     head,
     latency,
@@ -82,6 +85,8 @@ export interface LoopOptions {
   quiet?: boolean;
   /** Custom catalog file (JSON); falls back to the built-in CATALOG. */
   catalog?: string;
+  /** Do not exit non-zero even if a graded probe fails its assertions. */
+  noFail?: boolean;
 }
 
 function collectFor(p: Probe, opts: LoopOptions): CollectOptions {
@@ -138,6 +143,8 @@ export async function loop(opts: LoopOptions): Promise<void> {
 
   const client = await connect(session);
   let ran = 0;
+  let graded = 0;
+  let failed = 0;
   try {
     for (const [i, p] of probes.entries()) {
       if (existsSync(STOP_FILE)) {
@@ -150,9 +157,24 @@ export async function loop(opts: LoopOptions): Promise<void> {
         () => sendAndCollect(client, peer, p.send, collectFor(p, opts)),
         opts.quiet,
       );
-      await appendRun(result, { probeId: p.id, category: p.category, hypothesis: p.hypothesis });
+      const verdict = p.expect ? evaluate(p.expect, result) : undefined;
+      await appendRun(result, {
+        probeId: p.id,
+        category: p.category,
+        hypothesis: p.hypothesis,
+        ...(verdict ? { assert: verdict } : {}),
+      });
       ran += 1;
-      console.log(summarize(p.id, result));
+      if (verdict) {
+        graded += 1;
+        if (!verdict.ok) failed += 1;
+      }
+      console.log(summarize(p.id, result, verdict));
+      if (verdict && !verdict.ok) {
+        for (const ch of verdict.checks.filter((x) => !x.ok)) {
+          note(c.dim(`    ✗ ${ch.name}: ${ch.detail}`));
+        }
+      }
 
       // Interaction (opt-in): press a safe Confirm to complete a credit-gated probe.
       if (opts.confirm && p.confirm) {
@@ -182,6 +204,13 @@ export async function loop(opts: LoopOptions): Promise<void> {
     clearTitle();
     await client.disconnect();
   }
-  note(c.green(`done — ${ran} probe(s) logged.`));
+  note(
+    c.green(`done — ${ran} probe(s) logged.`) +
+      (graded ? c.dim(`  ·  ${graded - failed}/${graded} assertions passed`) : ""),
+  );
   notify(`mira loop done — ${ran} probe(s) logged`, { quiet: opts.quiet });
+  if (failed > 0 && !opts.noFail) {
+    note(c.red(`${failed} probe(s) failed their assertions.`));
+    process.exit(1);
+  }
 }

@@ -15,6 +15,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
+import { type Expect, ExpectSchema } from "./assert.js";
 
 /** Built-in categories. Custom catalogs may use any category string. */
 export type ProbeCategory = "core" | "skills" | "generation" | "wallet";
@@ -34,6 +35,8 @@ export interface Probe {
    */
   confirm?: boolean;
   note?: string;
+  /** Optional machine-checkable expectations — graded by `loop` (PASS/FAIL). */
+  expect?: Expect;
 }
 
 export const CATEGORIES: ProbeCategory[] = ["core", "skills", "generation", "wallet"];
@@ -46,6 +49,7 @@ const ProbeSchema = z.object({
   slow: z.boolean().optional(),
   confirm: z.boolean().optional(),
   note: z.string().optional(),
+  expect: ExpectSchema.optional(),
 });
 
 /**
@@ -76,6 +80,7 @@ export const CATALOG: Probe[] = [
     category: "core",
     hypothesis: "Which underlying model is Mira on? (docs say MiniMax M2.5)",
     send: "What AI model are you running on right now? Answer with just the model name.",
+    expect: { replies: true },
   },
   {
     id: "core-mem-set",
@@ -88,12 +93,14 @@ export const CATALOG: Probe[] = [
     category: "core",
     hypothesis: "Does the fact from core-mem-set persist across separate sends?",
     send: "What did I tell you my favorite TON token is? Answer with one word.",
+    expect: { textMatches: "gram" },
   },
   {
     id: "core-json",
     category: "core",
     hypothesis: "Will Mira return STRICT JSON only (usable for structured workflows)?",
     send: 'Reply with ONLY this JSON and nothing else: {"ok":true,"n":42}',
+    expect: { json: true },
   },
   {
     id: "core-reason",
@@ -106,6 +113,7 @@ export const CATALOG: Probe[] = [
     category: "core",
     hypothesis: "What commands does Mira expose? (/help surface, buttons)",
     send: "/help",
+    expect: { replies: true },
   },
   {
     id: "core-ja",
@@ -120,6 +128,7 @@ export const CATALOG: Probe[] = [
     category: "skills",
     hypothesis: "Does Mira enumerate its capabilities and surface buttons/links?",
     send: "What can you do? List your main capabilities.",
+    expect: { replies: true },
   },
   {
     id: "skill-research",
@@ -128,6 +137,7 @@ export const CATALOG: Probe[] = [
     send: "Search the web for the latest TON ecosystem news and give me 3 source links.",
     slow: true,
     note: "expect links[] (text_url source links) from deep research",
+    expect: { minLinks: 1 },
   },
   {
     id: "skill-translate",
@@ -157,6 +167,7 @@ export const CATALOG: Probe[] = [
     slow: true,
     confirm: true,
     note: "expect a Confirm card; with --confirm the runner presses ✅ Confirm -> media.kind=photo",
+    expect: { replies: true, minButtons: 1 },
   },
   {
     id: "gen-music",

@@ -91,6 +91,8 @@ export function stats(opts: StatsOptions = {}): void {
   const replied = records.filter((r) => !r.timedOut);
   const timedOut = records.length - replied.length;
   const lat = latencyStats(records);
+  const graded = records.filter((r) => r.assert);
+  const passed = graded.filter((r) => r.assert?.ok);
 
   // Per-category rollup (counts + reply rate), in first-seen order.
   const byCat = new Map<string, { total: number; replied: number }>();
@@ -115,6 +117,7 @@ export function stats(opts: StatsOptions = {}): void {
           probes: records.length,
           replied: replied.length,
           timedOut,
+          assertions: graded.length ? { graded: graded.length, passed: passed.length } : null,
           latencyMs: lat.count ? { min: lat.min, median: lat.median, p95: lat.p95, max: lat.max } : null,
           byCategory: Object.fromEntries([...byCat].map(([k, v]) => [k, v])),
         },
@@ -133,6 +136,13 @@ export function stats(opts: StatsOptions = {}): void {
       (timedOut ? c.yellow(`${timedOut} timed out`) : c.dim("0 timed out")) +
       c.dim(`  (${rate(replied.length, records.length)} reply rate)`),
   );
+  if (graded.length) {
+    const allPass = passed.length === graded.length;
+    note(
+      `  ${(allPass ? c.green : c.yellow)(`${passed.length}/${graded.length}`)} assertions passed` +
+        c.dim(`  (${rate(passed.length, graded.length)})`),
+    );
+  }
 
   if (lat.count) {
     note("");

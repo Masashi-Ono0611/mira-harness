@@ -9,6 +9,7 @@
  */
 import { appendFile, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import type { Verdict } from "./assert.js";
 import type { ProbeResult } from "./capture.js";
 
 export const RUNS_FILE = resolve(process.cwd(), process.env.MIRA_RUNS_FILE ?? "mira-runs.jsonl");
@@ -18,6 +19,8 @@ export interface RunMeta {
   probeId?: string;
   category?: string;
   hypothesis?: string;
+  /** Assertion verdict, present only when the probe declared `expect`. */
+  assert?: Verdict;
 }
 
 export async function appendRun(result: ProbeResult, meta: RunMeta = {}): Promise<void> {
