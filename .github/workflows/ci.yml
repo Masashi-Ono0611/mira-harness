@@ -5,16 +5,11 @@ on:
     branches: [main]
   pull_request:
 
-# Run the JS actions (checkout/setup-bun/setup-node) on Node 24 now, ahead of
-# GitHub's 2026-06-16 default switch — silences the Node 20 deprecation warning.
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.8"
@@ -32,7 +27,7 @@ jobs:
       # Smoke: the published artifacts must run on plain Node — consumers use npx /
       # node, never bun. Guards the "bun-first dev, Node-compatible output" contract:
       # the CLI is fully executed; both bins + the library entry are Node-parseable.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
       - run: node dist/cli.js --version
