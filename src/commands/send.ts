@@ -59,7 +59,10 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
   let verdict: Verdict | undefined;
   try {
     const result = await withProgress(`@${peer}`, () => sendAndCollect(client, peer, message, collect), opts.quiet);
-    if (!opts.noLog) await appendRun(result);
+    // Grade BEFORE logging so the verdict is persisted with the record (parity with
+    // `loop`); otherwise a graded send drops its assertion result from the run log.
+    if (opts.expect) verdict = evaluate(opts.expect, result);
+    if (!opts.noLog) await appendRun(result, verdict ? { assert: verdict } : {});
     if (!opts.quiet) {
       note(
         result.timedOut
@@ -70,7 +73,6 @@ export async function send(rawMessage: string, opts: SendOptions = {}): Promise<
       );
     }
     console.log(JSON.stringify(result, null, 2));
-    if (opts.expect) verdict = evaluate(opts.expect, result);
   } finally {
     await client.disconnect();
   }

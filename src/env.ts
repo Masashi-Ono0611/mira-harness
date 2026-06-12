@@ -14,7 +14,16 @@ function req(name: string): string {
 }
 
 export const tgEnv = {
-  apiId: (): number => Number(req("TG_API_ID")),
+  /** Telegram api_id — a positive integer. Reject non-numeric/zero up front so
+   *  `doctor` flags a bad value instead of passing NaN into GramJS (cryptic later). */
+  apiId: (): number => {
+    const raw = req("TG_API_ID");
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n <= 0) {
+      throw new Error(`TG_API_ID must be a positive integer (got "${raw}") — see .env.example`);
+    }
+    return n;
+  },
   apiHash: (): string => req("TG_API_HASH"),
   /** Empty until `mira-harness login` mints it; required by send/loop. */
   session: (): string => process.env.TG_SESSION ?? "",

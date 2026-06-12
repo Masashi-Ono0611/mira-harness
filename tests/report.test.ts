@@ -35,3 +35,16 @@ test("filtered to a single custom category -> only that section", () => {
   assert.doesNotMatch(md, /## core/);
   assert.doesNotMatch(md, /## \(uncategorized\)/);
 });
+
+test("summary line: probe/reply/timeout counts + latency avg/max + assertions passed", () => {
+  const slow: Rec = { ...rec("core"), firstReplyMs: 3000 };
+  const timedout: Rec = { ...rec("core"), timedOut: true, firstReplyMs: null };
+  const graded: Rec & { assert?: { ok: boolean; checks: [] } } = { ...rec("core"), assert: { ok: true, checks: [] } };
+  const md = buildReport([rec("core"), slow, timedout, graded]); // firstReplyMs: 1000, 3000, —, 1000
+  assert.match(md, /\*\*4\*\* probes/);
+  assert.match(md, /\*\*3\*\* replied/);
+  assert.match(md, /\*\*1\*\* timed out/);
+  assert.match(md, /\*\*1\/1\*\* assertions passed/);
+  assert.match(md, /avg \*\*1\.7s\*\*/); // (1000+3000+1000)/3 = 1666ms
+  assert.match(md, /max \*\*3\.0s\*\*/);
+});

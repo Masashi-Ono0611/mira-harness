@@ -21,9 +21,24 @@ export type RunRecord = ProbeResult & {
 };
 
 /**
- * Read the JSONL run log into records (malformed lines skipped). Throws ENOENT when
- * the file is absent — callers decide how to surface that. Shared by `report` and
- * `stats` so the two stay in lockstep on the log format.
+ * Minimal shape gate for a parsed log line. Every consumer reads `messages` (array
+ * methods) and `sent` (string methods), so a line that is valid JSON but the wrong
+ * shape (a number, a bare object, a half-written record) would crash report/stats/
+ * diff. Such lines are skipped just like syntactically-malformed ones.
+ */
+function isRunRecord(x: unknown): x is RunRecord {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    Array.isArray((x as RunRecord).messages) &&
+    typeof (x as RunRecord).sent === "string"
+  );
+}
+
+/**
+ * Read the JSONL run log into records (malformed/wrong-shape lines skipped). Throws
+ * ENOENT when the file is absent — callers decide how to surface that. Shared by
+ * `report` and `stats` so the two stay in lockstep on the log format.
  */
 export function loadRunRecords(inFile?: string, category?: string): RunRecord[] {
   const path = inFile ? resolve(process.cwd(), inFile) : RUNS_FILE;
@@ -33,7 +48,8 @@ export function loadRunRecords(inFile?: string, category?: string): RunRecord[] 
     const t = line.trim();
     if (!t) continue;
     try {
-      records.push(JSON.parse(t) as RunRecord);
+      const rec: unknown = JSON.parse(t);
+      if (isRunRecord(rec)) records.push(rec); // else: valid JSON, not a probe record — skip
     } catch {
       // skip malformed lines silently
     }
