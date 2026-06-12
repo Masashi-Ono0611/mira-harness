@@ -121,8 +121,9 @@ export async function withProgress<T>(label: string, fn: () => Promise<T>, quiet
 }
 
 /** Strip control chars (incl. BEL / ESC / newline) so they can't break or inject
- *  into an OSC escape sequence that embeds user-controlled text (probe id/category). */
-function oscSafe(s: string): string {
+ *  into an OSC escape sequence that embeds user-controlled text (probe id/category).
+ *  Exported for tests. */
+export function oscSafe(s: string): string {
   return s.replace(/[\x00-\x1f\x7f]/g, " ").trim();
 }
 

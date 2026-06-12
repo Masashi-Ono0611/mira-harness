@@ -4,7 +4,12 @@
  */
 import { test } from "bun:test";
 import assert from "node:assert/strict";
-import { percentile, sparkline } from "../src/commands/stats.js";
+import type { RunRecord } from "../src/commands/report.js";
+import { latencyStats, percentile, sparkline } from "../src/commands/stats.js";
+
+function lr(firstReplyMs: number | null, timedOut = false): RunRecord {
+  return { peer: "mira", sent: "x", messages: [], firstReplyMs, totalMs: 1, timedOut, ts: "" };
+}
 
 test("sparkline: empty -> '', length matches input, min->lowest glyph, max->highest", () => {
   assert.equal(sparkline([]), "");
@@ -27,4 +32,16 @@ test("percentile: ascending nearest-rank, clamped at the top", () => {
   assert.equal(percentile(xs, 50), 30);
   assert.equal(percentile(xs, 95), 50); // clamps to the last element
   assert.equal(percentile(xs, 0), 10);
+});
+
+test("latencyStats: excludes timeouts / null / 0; reports min·median·p95·max", () => {
+  const s = latencyStats([lr(1000), lr(3000), lr(2000), lr(null, true), lr(null), lr(0)]);
+  assert.equal(s.count, 3); // only 1000 / 2000 / 3000 count
+  assert.equal(s.min, 1000);
+  assert.equal(s.max, 3000);
+  assert.equal(s.median, 2000); // nearest-rank p50 of [1000,2000,3000]
+});
+
+test("latencyStats: empty input -> zeros, never NaN", () => {
+  assert.deepEqual(latencyStats([]), { count: 0, min: 0, median: 0, p95: 0, max: 0 });
 });

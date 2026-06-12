@@ -290,18 +290,30 @@ Examples:
 `,
 );
 
-// Bare `mira-harness` (no command) -> a CONCISE launch screen (banner + one-screen
-// summary), not the full help — `--help` / `<command> --help` stay comprehensive.
-// Done explicitly rather than via program.action(), which would swallow an unknown
-// command as a program argument and exit 0 instead of erroring on the typo. -V /
-// --help and every real command fall through to commander (keeps unknown-cmd error).
+// Bare `mira-harness` (no command) -> a one-screen launch summary: banner +
+// a command table (name + one-line description) + a few quick-start examples,
+// pointing at `--help` for the full reference. Lighter than commander's full
+// help (no Usage/Options dump) but NOT bare — each command says what it does.
+// The descriptions are reused from each command's .description() (single source
+// of truth — no second copy to drift). Done explicitly rather than via
+// program.action(), which would swallow an unknown command as a program argument
+// and exit 0 instead of erroring on the typo. -V / --help and every real command
+// fall through to commander (keeps the unknown-command error).
 if (process.argv.length <= 2) {
   banner(version);
   console.log("  Drive @mira from your terminal — QA, learn, and assert on its behavior.\n");
-  console.log(`  Commands  ${c.cyan("login · doctor · send · loop · catalog · watch")}`);
-  console.log(`            ${c.cyan("report · stats · diff · assert · schema")}\n`);
+  console.log(`  ${c.bold("Commands")}`);
+  const cmds = program.commands.filter((cmd) => cmd.name() !== "help");
+  const pad = Math.max(...cmds.map((cmd) => cmd.name().length));
+  for (const cmd of cmds) {
+    console.log(`    ${c.cyan(cmd.name().padEnd(pad))}  ${c.dim(cmd.description())}`);
+  }
+  console.log(`\n  ${c.bold("Quick start")}`);
+  for (const ex of ["login", "doctor", 'send "What can you do?"', "loop --category core"]) {
+    console.log(c.dim(`    $ mira-harness ${ex}`));
+  }
   console.log(
-    `  Run ${c.bold("mira-harness --help")} for options + examples, or ${c.bold("mira-harness <command> --help")}.`,
+    `\n  Run ${c.bold("mira-harness --help")} for all options + examples, or ${c.bold("mira-harness <command> --help")}.`,
   );
   process.exit(0);
 }

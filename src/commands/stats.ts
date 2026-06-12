@@ -38,8 +38,8 @@ export function percentile(sortedAsc: number[], p: number): number {
 
 const secs = (ms: number): string => `${(ms / 1000).toFixed(1)}s`;
 
-/** Latency stats over the first-reply times that actually arrived. */
-function latencyStats(records: RunRecord[]): {
+/** Latency stats over the first-reply times that actually arrived. (Exported for tests.) */
+export function latencyStats(records: RunRecord[]): {
   count: number;
   min: number;
   median: number;
