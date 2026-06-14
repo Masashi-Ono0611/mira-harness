@@ -35,6 +35,9 @@ A second frontend over the same core, for agents. Tools:
 - `mira_loop` { category?, max?, peer?, gapMs?, settleMs?, timeoutMs?, catalogFile? } — run the catalog, **observe-only** (never clicks / spends credits).
 - `mira_catalog` { category?, catalogFile? } — list the catalog (no network).
 - `mira_report` { inFile?, category? } — run log → Markdown.
+- `mira_stats` { inFile?, category? } — run-log summary: totals, reply rate, latency, by-category (JSON, no network).
+- `mira_diff` { baseline, current? } — drift between two run logs: regressions / changes (JSON, no network).
+- `mira_assert` { inFile?, catalogFile?, category? } — re-grade a saved run log against the catalog's `expect` (JSON, no network).
 - `mira_doctor` — env / session / connectivity check (no arguments).
 Credentials come from the MCP `env` block or a `.env` in the server's cwd.
 

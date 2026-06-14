@@ -59,6 +59,42 @@ export function latencyStats(records: RunRecord[]): {
   };
 }
 
+export interface StatsSummary {
+  probes: number;
+  replied: number;
+  timedOut: number;
+  assertions: { graded: number; passed: number } | null;
+  latencyMs: { min: number; median: number; p95: number; max: number } | null;
+  byCategory: Record<string, { total: number; replied: number }>;
+}
+
+/** Roll the run log up into a machine-readable summary. Pure — shared by the CLI `--json` path and MCP. */
+export function statsSummary(records: RunRecord[]): StatsSummary {
+  const replied = records.filter((r) => !r.timedOut);
+  const lat = latencyStats(records);
+  const graded = records.filter((r) => r.assert);
+  const passed = graded.filter((r) => r.assert?.ok);
+
+  // Per-category rollup (counts + reply rate), in first-seen order.
+  const byCat = new Map<string, { total: number; replied: number }>();
+  for (const r of records) {
+    const key = r.category ?? "(uncategorized)";
+    const e = byCat.get(key) ?? { total: 0, replied: 0 };
+    e.total += 1;
+    if (!r.timedOut) e.replied += 1;
+    byCat.set(key, e);
+  }
+
+  return {
+    probes: records.length,
+    replied: replied.length,
+    timedOut: records.length - replied.length,
+    assertions: graded.length ? { graded: graded.length, passed: passed.length } : null,
+    latencyMs: lat.count ? { min: lat.min, median: lat.median, p95: lat.p95, max: lat.max } : null,
+    byCategory: Object.fromEntries([...byCat].map(([k, v]) => [k, v])),
+  };
+}
+
 export interface StatsOptions {
   in?: string;
   category?: string;
@@ -88,6 +124,11 @@ export function stats(opts: StatsOptions = {}): void {
     process.exit(1);
   }
 
+  if (opts.json) {
+    console.log(JSON.stringify(statsSummary(records), null, 2));
+    return;
+  }
+
   const replied = records.filter((r) => !r.timedOut);
   const timedOut = records.length - replied.length;
   const lat = latencyStats(records);
@@ -109,24 +150,6 @@ export function stats(opts: StatsOptions = {}): void {
     .sort((a, b) => (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0))
     .filter((r) => !r.timedOut && r.firstReplyMs !== null && r.firstReplyMs > 0)
     .map((r) => r.firstReplyMs as number);
-
-  if (opts.json) {
-    console.log(
-      JSON.stringify(
-        {
-          probes: records.length,
-          replied: replied.length,
-          timedOut,
-          assertions: graded.length ? { graded: graded.length, passed: passed.length } : null,
-          latencyMs: lat.count ? { min: lat.min, median: lat.median, p95: lat.p95, max: lat.max } : null,
-          byCategory: Object.fromEntries([...byCat].map(([k, v]) => [k, v])),
-        },
-        null,
-        2,
-      ),
-    );
-    return;
-  }
 
   const rate = (n: number, total: number): string => `${total ? Math.round((n / total) * 100) : 0}%`;
 
