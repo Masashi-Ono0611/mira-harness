@@ -13,7 +13,7 @@
     <circle cx="44" cy="44" r="44" fill="#0098EA"/>
     <path d="M23 31 H65 L44 68 Z M44 31 V68" stroke="#fff" stroke-width="4.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
   </g>
-  <text x="212" y="124" font-family="Menlo, monospace" font-size="22" letter-spacing="3" font-weight="700" fill="#0098EA">STON.FI VIBE CODING · MIRA AI TRACK</text>
+  <text x="212" y="124" font-family="Menlo, monospace" font-size="22" letter-spacing="3" font-weight="700" fill="#0098EA">STON.FI HACKATHON · MIRA AI TRACK</text>
 
   <text x="94" y="318" font-family="'Helvetica Neue', Arial, sans-serif" font-size="120" font-weight="800" fill="#11151A">mira-harness</text>
 

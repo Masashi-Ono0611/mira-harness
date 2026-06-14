@@ -17,6 +17,8 @@ Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
 
 **Live:** [masashi-ono0611.github.io/mira-harness](https://masashi-ono0611.github.io/mira-harness/) — landing page + the hosted [`llms.txt`](https://masashi-ono0611.github.io/mira-harness/llms.txt) spec.
 
+🏆 **1st place — Mira AI Track**, [STON.fi Hackathon (Wave 2)](https://x.com/ston_fi/status/2064704637073326309) — per STON.fi's official results.
+
 ## Why a userbot (not a bot)
 
 @mira is **chat-native** — it lives in Telegram chat, with no public API. And
