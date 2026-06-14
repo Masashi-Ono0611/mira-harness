@@ -12,29 +12,29 @@ export function note(msg: string): void {
   process.stderr.write(`${msg}\n`);
 }
 
-/** Center a short glyph string within `width` columns (used for the mascot mouth). */
-function center(s: string, width: number): string {
-  const pad = Math.max(0, width - s.length);
-  const left = Math.floor(pad / 2);
-  return " ".repeat(left) + s + " ".repeat(pad - left);
-}
-
 export type Mood = "neutral" | "happy" | "sleepy" | "sad";
 
 /**
- * A friendly @mira mascot whose face reflects a mood. Pure ASCII so it aligns in
- * any terminal/locale. Eyes are 5 cols wide; the mouth is centered to match the
- * `.-------.` box. Used by the banner (neutral) and command epilogues (e.g. doctor).
+ * A friendly @mira cat mascot whose face reflects a mood — a Claude-style ✶ spark
+ * flanks the ears (a `z` when sleepy), with two little paws below. Pure ASCII art
+ * plus that one accent glyph, so it aligns in any terminal/locale. Used by the banner
+ * (neutral) and command epilogues (e.g. doctor — happy on pass, sad on fail).
  */
 export function mascot(mood: Mood = "neutral"): string[] {
-  const faces: Record<Mood, { top: string; eyes: string; mouth: string }> = {
-    neutral: { top: "*  .  *", eyes: "o   o", mouth: "~" },
-    happy: { top: "*  .  *", eyes: "^   ^", mouth: "\\_/" },
-    sleepy: { top: "z  .  z", eyes: "-   -", mouth: "~" },
-    sad: { top: "       ", eyes: "x   x", mouth: "_" },
+  const faces: Record<Mood, { eyes: string; mouth: string; spark: string }> = {
+    neutral: { eyes: "o   o", mouth: "‿", spark: "✶" },
+    happy: { eyes: "^   ^", mouth: "ω", spark: "✶" },
+    sleepy: { eyes: "-   -", mouth: "~", spark: "z" },
+    sad: { eyes: "x   x", mouth: "_", spark: "✶" },
   };
   const f = faces[mood];
-  return [`     ${f.top}`, "    .-------.", `    | ${f.eyes} |`, `    | ${center(f.mouth, 5)} |`, "    '-------'"];
+  return [
+    `  ${f.spark} /\\ _ /\\ ${f.spark}`,
+    `   ( ${f.eyes} )`,
+    `   (   ${f.mouth}   )`,
+    "   /       \\",
+    "  (_)     (_)",
+  ];
 }
 
 /** "MIRA" wordmark (figlet "Standard"). Backslashes are escaped (\\). */

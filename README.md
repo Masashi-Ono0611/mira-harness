@@ -1,11 +1,11 @@
 # mira-harness — a CLI + MCP dev-tool for communicating with [@mira](https://t.me/mira)
 
 ```text
-     *  .  *
-    .-------.
-    | o   o |     hi — I drive @mira so you don't have to copy-paste its replies.
-    |   ~   |     ( I blink ^_^ when doctor passes, and yawn -_- on a timeout. )
-    '-------'
+  ✶ /\ _ /\ ✶
+   ( o   o )    hi — I drive @mira so you don't have to copy-paste its replies.
+   (   ‿   )    ( I blink ^_^ when doctor passes, and yawn -_- on a timeout. )
+   /       \
+  (_)     (_)
 ```
 
 Drive the **@mira Telegram bot** from a userbot, capture its **full** reply
