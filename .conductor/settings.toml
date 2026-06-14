@@ -1,0 +1,17 @@
+#:schema https://conductor.build/schemas/settings.repo.schema.json
+
+# .env / .env.local hold TG_SESSION and TG_API_* credentials — copy into each workspace.
+file_include_globs = ".env\n.env.local\n"
+
+[scripts]
+# Install bun dependencies and produce a fresh dist/ so MCP and CLI commands are
+# runnable from the workspace immediately after creation.
+setup = "bun install && bun run build"
+
+# Keep a test watcher alive so agents can confirm changes stay green without
+# having to invoke bun test manually after each edit.
+run = "bun test --watch"
+run_mode = "concurrent"
+
+# Rebuild before archiving to keep dist/ in sync with any final edits.
+archive = "bun run build"
