@@ -19,7 +19,7 @@ import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "./catal
 import { type CollectOptions, connect, resolvePeer, sendAndCollect } from "./client.js";
 import { assertSummary } from "./commands/assert.js";
 import { diffRuns } from "./commands/diff.js";
-import { loadRunRecords, renderReport, type RunRecord } from "./commands/report.js";
+import { loadRunRecords, type RunRecord, renderReport } from "./commands/report.js";
 import { statsSummary } from "./commands/stats.js";
 import { tgEnv } from "./env.js";
 import { appendRun } from "./log.js";
@@ -236,7 +236,9 @@ server.registerTool(
     }
     if (!records.length) {
       return errorText(
-        category ? `no probes in category "${category}" in the run log.` : "run log is empty — run mira_send or mira_loop first.",
+        category
+          ? `no probes in category "${category}" in the run log.`
+          : "run log is empty — run mira_send or mira_loop first.",
       );
     }
     return json(statsSummary(records));
