@@ -17,6 +17,25 @@ import { RUNS_FILE } from "../log.js";
 import { c, note } from "../ui.js";
 import { loadRunRecords, type RunRecord } from "./report.js";
 
+export interface AssertSummary {
+  graded: number;
+  passed: number;
+  results: { id: string; verdict: Verdict }[];
+}
+
+/** Re-apply a catalog's `expect` to saved records. Pure — shared by the CLI and MCP. */
+export function assertSummary(records: RunRecord[], source: Probe[]): AssertSummary {
+  const byId = new Map(source.map((p) => [p.id, p]));
+  const results: { id: string; verdict: Verdict }[] = [];
+  for (const r of records) {
+    if (!r.probeId) continue;
+    const p = byId.get(r.probeId);
+    if (!p?.expect) continue;
+    results.push({ id: r.probeId, verdict: evaluate(p.expect, r) });
+  }
+  return { graded: results.length, passed: results.filter((g) => g.verdict.ok).length, results };
+}
+
 export interface AssertOptions {
   in?: string;
   catalog?: string;
@@ -40,36 +59,26 @@ export function assertLog(opts: AssertOptions = {}): void {
   }
 
   const source: Probe[] = opts.catalog ? loadCatalog(opts.catalog) : CATALOG;
-  const byId = new Map(source.map((p) => [p.id, p]));
-
-  const graded: { id: string; verdict: Verdict }[] = [];
-  for (const r of records) {
-    if (!r.probeId) continue;
-    const p = byId.get(r.probeId);
-    if (!p?.expect) continue;
-    graded.push({ id: r.probeId, verdict: evaluate(p.expect, r) });
-  }
-  const failed = graded.filter((g) => !g.verdict.ok);
+  const { graded, passed, results } = assertSummary(records, source);
+  const failed = results.filter((g) => !g.verdict.ok);
 
   if (opts.json) {
-    console.log(
-      JSON.stringify({ graded: graded.length, passed: graded.length - failed.length, results: graded }, null, 2),
-    );
+    console.log(JSON.stringify({ graded, passed, results }, null, 2));
     if (failed.length && !opts.noFail) process.exit(1);
     return;
   }
 
   note(c.bold(`assert  ${opts.catalog ?? "(built-in catalog)"} × ${opts.in ?? "(run log)"}`));
-  if (!graded.length) {
+  if (!graded) {
     note(c.dim("  no records matched a probe with `expect` — nothing to grade."));
     return;
   }
-  for (const g of graded) {
+  for (const g of results) {
     note(`  ${g.verdict.ok ? c.green("✓") : c.red("✗")} ${c.cyan(g.id)}`);
     if (!g.verdict.ok) {
       for (const ch of g.verdict.checks.filter((x) => !x.ok)) note(c.dim(`      ✗ ${ch.name}: ${ch.detail}`));
     }
   }
-  note((failed.length ? c.red : c.green)(`\n${graded.length - failed.length}/${graded.length} assertions passed.`));
+  note((failed.length ? c.red : c.green)(`\n${passed}/${graded} assertions passed.`));
   if (failed.length && !opts.noFail) process.exit(1);
 }

@@ -3,7 +3,7 @@
  * mira-harness MCP server (stdio) — a third frontend over the same core as the CLI.
  *
  * Lets a Claude/agent probe @mira directly via tools: mira_send, mira_loop,
- * mira_catalog, mira_report, mira_doctor.
+ * mira_catalog, mira_report, mira_stats, mira_diff, mira_assert, mira_doctor.
  *
  * Register (local, unbuilt path):
  *   { "mcpServers": { "mira-harness": { "command": "node", "args": ["<abs>/dist/mcp.js"] } } }
@@ -17,7 +17,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { CATALOG, CATEGORIES, loadCatalog, type Probe, probesFor } from "./catalog.js";
 import { type CollectOptions, connect, resolvePeer, sendAndCollect } from "./client.js";
-import { renderReport } from "./commands/report.js";
+import { assertSummary } from "./commands/assert.js";
+import { diffRuns } from "./commands/diff.js";
+import { loadRunRecords, type RunRecord, renderReport } from "./commands/report.js";
+import { statsSummary } from "./commands/stats.js";
 import { tgEnv } from "./env.js";
 import { appendRun } from "./log.js";
 import { getVersion } from "./version.js";
@@ -210,6 +213,86 @@ server.registerTool(
     } catch (e) {
       return errorText(msg(e));
     }
+  },
+);
+
+server.registerTool(
+  "mira_stats",
+  {
+    title: "Summarize the run log",
+    description:
+      "Roll the run log up into totals, reply rate, assertion pass count, first-reply latency (min/median/p95/max) and a per-category breakdown. Read-only — sends nothing.",
+    inputSchema: {
+      inFile: z.string().optional().describe("input JSONL path (default: the run log)"),
+      category: z.string().optional().describe("only include probes from this category"),
+    },
+  },
+  async ({ inFile, category }) => {
+    let records: RunRecord[];
+    try {
+      records = loadRunRecords(inFile, category);
+    } catch (e) {
+      return errorText(msg(e));
+    }
+    if (!records.length) {
+      return errorText(
+        category
+          ? `no probes in category "${category}" in the run log.`
+          : "run log is empty — run mira_send or mira_loop first.",
+      );
+    }
+    return json(statsSummary(records));
+  },
+);
+
+server.registerTool(
+  "mira_diff",
+  {
+    title: "Diff two run logs for @mira drift",
+    description:
+      "Compare two run logs probe-by-probe and report behavioral drift (regressions, improvements, surface changes). Read-only — sends nothing.",
+    inputSchema: {
+      baseline: z.string().describe("baseline run-log path to compare against"),
+      current: z.string().optional().describe("current run-log path (default: the run log)"),
+    },
+  },
+  async ({ baseline, current }) => {
+    let base: RunRecord[];
+    let cur: RunRecord[];
+    try {
+      base = loadRunRecords(baseline);
+      cur = loadRunRecords(current);
+    } catch (e) {
+      return errorText(msg(e));
+    }
+    const items = diffRuns(base, cur);
+    const regressions = items.filter((i) => i.kind === "regression").length;
+    return json({ regressions, drift: items.length, items });
+  },
+);
+
+server.registerTool(
+  "mira_assert",
+  {
+    title: "Re-grade a run log offline",
+    description:
+      "Re-apply a catalog's `expect` assertions to a SAVED run log (no network) and return per-probe verdicts plus a pass count. Read-only — sends nothing.",
+    inputSchema: {
+      inFile: z.string().optional().describe("input JSONL path (default: the run log)"),
+      catalogFile: z.string().optional().describe("custom catalog JSON file (default: the built-in catalog)"),
+      category: z.string().optional().describe("only include probes from this category"),
+    },
+  },
+  async ({ inFile, catalogFile, category }) => {
+    let records: RunRecord[];
+    let source: Probe[];
+    try {
+      records = loadRunRecords(inFile, category);
+      source = catalogFile ? loadCatalog(catalogFile) : CATALOG;
+    } catch (e) {
+      return errorText(msg(e));
+    }
+    return json(assertSummary(records, source));
   },
 );
 

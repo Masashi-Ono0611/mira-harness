@@ -209,6 +209,9 @@ Claude/agent can probe @mira directly via tools.
 | `mira_loop` | `category?`, `max?`, `peer?`, `gapMs?`, `settleMs?`, `timeoutMs?`, `catalogFile?` | run the catalog, **observe-only** (never clicks / spends credits) |
 | `mira_catalog` | `category?`, `catalogFile?` | list the catalog (no network) |
 | `mira_report` | `inFile?`, `category?` | run log → Markdown |
+| `mira_stats` | `inFile?`, `category?` | run-log summary: totals, reply rate, latency, by-category (JSON) |
+| `mira_diff` | `baseline`, `current?` | drift between two run logs (regressions / changes) |
+| `mira_assert` | `inFile?`, `catalogFile?`, `category?` | re-grade a saved run log offline (no network) |
 | `mira_doctor` | — | env / session / connectivity check |
 
 Register it (local build — run `bun run build` first):
