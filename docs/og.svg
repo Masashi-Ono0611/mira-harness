@@ -8,10 +8,28 @@
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect x="0" y="0" width="1200" height="8" fill="#0098EA"/>
 
-  <!-- TON-style diamond mark -->
-  <g transform="translate(96,92)">
-    <circle cx="44" cy="44" r="44" fill="#0098EA"/>
-    <path d="M23 31 H65 L44 68 Z M44 31 V68" stroke="#fff" stroke-width="4.1" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- cat mascot mark -->
+  <g transform="translate(96,84) scale(1.6)">
+    <path d="M14 18 L12 2 L27 14 Z" fill="#0098EA"/>
+    <path d="M42 18 L44 2 L29 14 Z" fill="#0098EA"/>
+    <path d="M17 15 L16 6 L25 14 Z" fill="#CFEBFB"/>
+    <path d="M39 15 L40 6 L31 14 Z" fill="#CFEBFB"/>
+    <circle cx="28" cy="30" r="20" fill="#0098EA"/>
+    <circle cx="21" cy="28" r="4" fill="#fff"/>
+    <circle cx="35" cy="28" r="4" fill="#fff"/>
+    <circle cx="21.8" cy="28.7" r="1.9" fill="#0B5E8E"/>
+    <circle cx="35.8" cy="28.7" r="1.9" fill="#0B5E8E"/>
+    <circle cx="21.1" cy="27.4" r="0.7" fill="#fff"/>
+    <circle cx="35.1" cy="27.4" r="0.7" fill="#fff"/>
+    <path d="M28 33 L30 36 L26 36 Z" fill="#FFB3C1"/>
+    <path d="M28 36 q-2.6 3.4 -5 1.4" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M28 36 q2.6 3.4 5 1.4" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <g stroke="#fff" stroke-width="1" stroke-linecap="round" opacity="0.9">
+      <line x1="17" y1="32" x2="5" y2="30"/>
+      <line x1="17" y1="35" x2="5" y2="37"/>
+      <line x1="39" y1="32" x2="51" y2="30"/>
+      <line x1="39" y1="35" x2="51" y2="37"/>
+    </g>
   </g>
   <text x="212" y="124" font-family="Menlo, monospace" font-size="22" letter-spacing="3" font-weight="700" fill="#0098EA">STON.FI HACKATHON · MIRA AI TRACK</text>
 
