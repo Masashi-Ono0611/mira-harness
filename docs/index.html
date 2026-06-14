@@ -58,11 +58,6 @@
   /* ---------- hero ---------- */
   header { padding: 72px 0 52px; border-bottom: 1px solid var(--line); }
   .mark { width: 46px; height: 46px; display: block; margin-bottom: 22px; }
-  .kicker {
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--ton); font-weight: 700; margin-bottom: 18px;
-  }
   h1 { font-size: 74px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; margin-bottom: 22px; }
   .tagline { font-size: 27px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.32; max-width: 720px; }
   .tagline strong { color: var(--ton); font-weight: 700; }
@@ -74,6 +69,22 @@
     margin-top: 22px; font-family: ui-monospace, Menlo, monospace;
   }
   .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .award {
+    display: inline-flex; align-items: stretch; margin-top: 22px;
+    border: 1px solid #E0D2A6; border-radius: 6px; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+    font-size: 12.5px; text-decoration: none;
+  }
+  .award .chip {
+    background: #F4ECD7; color: #6E5518; font-weight: 700;
+    padding: 6px 11px; display: inline-flex; align-items: center; gap: 7px;
+    border-right: 1px solid #E0D2A6;
+  }
+  .award .meta {
+    background: #FCFAF2; color: var(--muted); font-weight: 500;
+    padding: 6px 13px; display: inline-flex; align-items: center;
+  }
+  .award:hover .meta { color: var(--ink); }
 
   /* ---------- section scaffold ---------- */
   section { padding: 62px 0; border-bottom: 1px solid var(--line); }
@@ -146,9 +157,9 @@
       <circle cx="28" cy="28" r="28" fill="#0098EA"/>
       <path d="M15 20 H41 L28 43 Z M28 20 V43" stroke="#fff" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>
-    <div class="kicker">STON.fi Vibe Coding · Mira AI Track</div>
     <h1>mira-harness</h1>
     <p class="tagline">@mira lives in chat, not code.<br><strong>mira-harness bridges the gap.</strong></p>
+    <a class="award" href="https://x.com/ston_fi/status/2064704637073326309" target="_blank" rel="noopener"><span class="chip">🏆 1st place</span><span class="meta">Mira AI Track · STON.fi Hackathon (Wave 2)</span></a>
   </header>
 
   <!-- ============ 01 CONCEPT ============ -->
@@ -404,10 +415,11 @@
       <a href="https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/SUBMISSION.md">submission</a>
       <a href="https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/mira-feedback.md">Mira feedback</a>
       <a href="https://github.com/Masashi-Ono0611/mira-harness/blob/main/docs/experiments-log.md">experiment log</a>
+      <a href="https://x.com/ston_fi/status/2064704637073326309">results</a>
       <a href="llms.txt">llms.txt</a>
     </div>
     <div class="foot-note">
-      mira-harness · STON.fi Vibe Coding Hackathon R2 — Mira AI Track · built with Claude (Opus) and @mira as pair programmers · MIT
+      mira-harness · built with Claude (Opus) and @mira as pair programmers · MIT
     </div>
   </footer>
 

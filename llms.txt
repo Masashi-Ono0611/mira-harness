@@ -5,6 +5,8 @@
 > self-driving experiment catalog. This file is the machine-readable spec for an agent to
 > use the tool without reverse-engineering it.
 
+1st place, Mira AI Track — STON.fi Hackathon Wave 2 (official results: https://x.com/ston_fi/status/2064704637073326309).
+
 ## Why a userbot
 @mira is chat-native (no public API) and Telegram forbids a bot from reading another bot's messages,
 so the only programmatic path is a userbot (a real user account over MTProto / GramJS).
