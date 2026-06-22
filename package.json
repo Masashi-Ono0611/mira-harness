@@ -72,5 +72,8 @@
     "@types/node": "^22",
     "publint": "^0.3.21",
     "typescript": "^5"
+  },
+  "overrides": {
+    "hono": ">=4.12.25"
   }
 }
