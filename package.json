@@ -22,7 +22,7 @@
     "llms.txt"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "bun src/cli.ts",
