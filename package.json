@@ -1,7 +1,7 @@
 {
   "name": "mira-harness",
   "version": "0.2.8",
-  "description": "A CLI + MCP dev-tool for communicating with the @mira Telegram bot — capture its full reply (buttons/links/media) and run a self-driving experiment catalog.",
+  "description": "A CLI + MCP dev-tool for communicating with the @mira Telegram bot \u2014 capture its full reply (buttons/links/media) and run a self-driving experiment catalog.",
   "type": "module",
   "bin": {
     "mira-harness": "dist/cli.js",
@@ -58,7 +58,7 @@
     "url": "https://github.com/Masashi-Ono0611/mira-harness/issues"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "commander": "^12",
     "dotenv": "^16",
     "picocolors": "^1.1.1",
@@ -74,6 +74,8 @@
     "typescript": "^5"
   },
   "overrides": {
-    "hono": ">=4.12.25"
+    "hono": ">=4.12.25",
+    "fast-uri": ">=3.1.7",
+    "ip-address": ">=10.3.1"
   }
 }
